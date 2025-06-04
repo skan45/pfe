@@ -1,0 +1,143 @@
+# À propos de X-Facture
+----------------------------------------------------
+X-Facture est une plateforme web qui automatisera  l’extraction des champs importants à partir des photos de factures en se basant sur des algorithmes intelligents .
+Cette solution facilitera la tache des comptables qui font l’extraction manuelle des informations à partir des factures de leurs clients .  
+Mis à part l’automatisation du process de l’extraction , cette plateforme mettra en contact les comptables avec leurs clients et leurs assurera une facilité dans le partage des documents entre eux et une meilleure visibilité sur la totalité des factures ainsi que leurs états.
+
+
+
+
+
+
+# Installations Nécessaires
+--------------------------------------------------------------
+
+- installer la version 3.8.5 de python via le lien : https://www.python.org/downloads/ 
+
+- installer anaconda : https://www.anaconda.com/products/individual
+
+- Créer un environnement virtuel à l'aide de Anaconda Navigator
+
+- installer toutes les bibliothèques necessaires [requirements.txt](https://drive.google.com/file/d/109mgIEZUdJ2ay1MqQx_XrycAxf6k1rTq/view?usp=sharing) dans l'environnement virtuel à l'aide de ces 2 commandes:
+```bash
+> activate "nom de l'environnement"
+> pip install -r requirements.txt -v
+```
+
+  
+# Mettre en Marche l'appplication Web
+---------------------------------------------------------------
+
+**1) Configuration de la base de donnée:**
+
+Dans un 1er lieu il faut aller dans le dossier du projet et modifier dans le fichier 'settings.py ' les informations de la base de donnée suivant les informations de la nouvelle base de donnée
+```python
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'YourDataBaseName',
+        'HOST': 'localhost', # ceci est dans le cas du projet en local 
+        'USER': 'postgres', # postgres est le nom d'utilisateur par defaut 
+        'PASSWORD': '####', # le mots de passe est celui saisi lors de l'installation de postgreSQL
+        'PORT': '5432'
+        }
+        }
+```
+
+### Lancement du serveur 
+- Faire les migrations dans la base de donnÃ©es pour la premiere fois  ** (cette Ã©tape doit se faire Ã  chaque fois qu'il ya eu une modification dans le fichier models.py qui reprÃ©sente les tables de la base de donnÃ©es)**
+```bash
+projectpath > python manage.py makemigrations 
+projectpath > python manage.py migrate
+```
+
+apres il faut excuter **seed.sql** pour la creation de deux group (Client & comptbale )
+
+
+
+Pour lancer le serveur web de django il faut taper les commande suivante en terminal (le serveur 
+doit etre lancé dans l'environnement virtuel qui contient les packages python requis):
+```bash
+> activate "nom de l'environnement"
+> cd "path du projet"
+> python manage.py runserver
+```
+
+Une fois le serveur est lancé il suffit de taper dans le navigateur : **[ localhost:8000/login ]** ou **[ 127.0.0.1:8000/login ]**
+
+# Création des comptes
+--------------------------------------------------------------------
+Pour créer un nouveau compte il faut aller directement à l'adresse [ localhost:8000/register ] et taper **le username ,le Nom et le Prénom , l'adresse mail et le mot de passe** et puis il faut indiquer si c'est un compte comptable ou compte client et cliquer sur **Créer un compte**.
+Suivant le choix du rôle , un nouveau compte se crée soit pour un comptable soit pour un client.
+
+# Le profil Comptable
+---------------------------------------------------------------------
+Le profil **Comptable** est muni d'un side bar à travers lequel on pourra naviger entre **5 onglets : Accueil, Clients , Factures , Notifications et Profil**
+
+**1. Onglet Accueil :**
+
+C'est une interface à travers laquelle le comptable pourra: 
+
+- Avoir des statistiques en temps réel sur le nombre de ses clients / nombre des factures non validées / nombre de factures validées .
+
+**2. Onglet Clients :**
+
+C'est une interface à travers laquelle le comptable pourra: 
+
+- Voir la liste de tous ses clients.
+- Consulter le portfolio de chaque clients
+- Supprimer une/plusieurs clients(s)
+
+**3. Onglet Factures : **
+
+C'est une interface à travers laquelle le comptable pourra: 
+
+- ajouter une nouvelle facture tout en l'affectant à un client 
+- Faire des recherches dans tous ses factures suivant ( la date d'ajout / le label / le client / le statut )
+- voir l'historique de toutes ses factures 
+- Faire l'extraction automatique des informations à partir des factures
+- Modifier les détails d'une/plusieurs facture(s)
+- Supprimer une/plusieurs facture(s)
+- télécharger les factures sous format Excel ou CSV
+
+**4. Onglet Notifications :**
+
+C'est une interface à travers laquelle le comptable pourra: 
+
+- Recevoir des notifications dans le cas ou ses clients ajoutent des factures dans leurs portfolios.
+
+**5. Onglet Profil :**
+
+C'est une interface à travers laquelle le comptable pourra: 
+
+- Modifier et enregistrer ses informations personelles comme Adresse , Numéro de téléphone , description, etc..
+
+
+# Le profil Client
+---------------------------------------------------------------------
+
+Le profil **Client** est muni d'un side bar à travers lequel on pourra naviger entre **3 onglets : Factures , Notifications et Profil**
+
+**1. Onglet Factures : **
+
+C'est une interface à travers laquelle le Client pourra: 
+
+- ajouter des nouvelles factures
+- Faire des recherches dans tous ses factures suivant ( la date d'ajout / le label / le statut )
+- voir l'historique de toutes ses factures 
+- Faire l'extraction automatique des informations à partir des factures
+- Modifier les détails d'une/plusieurs facture(s)
+- Supprimer une/plusieurs facture(s)
+- télécharger les factures sous format Excel ou CSV
+
+**2. Onglet Notifications :**
+
+C'est une interface à travers laquelle le Client pourra: 
+
+- Recevoir des notifications dans le cas où son comptable fait des modifications sur des factures ou bien change le statut d'une facture.
+
+**3. Onglet Profil :**
+
+C'est une interface à travers laquelle le client pourra: 
+
+- Modifier et enregistrer ses informations personelles comme Adresse , Numéro de téléphone , description, etc..

@@ -1,0 +1,247 @@
+
+{% extends 'layouts/base.html' %}
+
+  {% block title %} Profil {% endblock title %}
+  {% load static %}
+  <!-- Specific CSS goes HERE -->
+  {% block stylesheets %}
+  <link rel="stylesheet" href="{% static 'assets/css/client-list.css' %}">
+  {% endblock stylesheets %}
+
+{% block content %}
+
+    <div class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12 grid-margin">
+                    <div class="card">
+                        <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="card-title mb-0">Liste des clients</h4>
+    <button class="btn btn-outline-primary" onclick="openModal()">Ajouter Client</button>
+</div>         
+                            
+                            <div class="table-responsive">
+                                
+                                <table class="table-per">
+                                    <thead>
+                                        <tr>
+                                            <th><center>Prénom</center></th>
+                                            <th><center>Nom</center></th>
+                                            <th><center>E-mail</center></th>
+                                            <th><center>Invitation</center></th>
+                                            <th><center>N° Téléphone</center></th>
+                                            <th><center>Actions</center></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for c in clients %}
+                                        <tr>
+                                          
+                                            <td>
+                                                <img src="assets/images/faces/face1.jpg" alt="image" />
+                                                <span class="pl-2">{{ c.prenom }}</span>
+                                            </td>
+                                            <td> {{ c.nom }} </td>
+                                            <td> {{ c.email }} </td>
+                                            <td>
+                                                <div class="badge {% if c.status == 'Accepted' %}badge-outline-success
+                                                                {% elif c.status == 'Pending' %}badge-outline-warning
+                                                                {% elif c.status == 'Rejected' %}badge-outline-danger
+                                                                {% else %}badge-outline-secondary{% endif %}"> 
+                                                    {{ c.status }}
+                                                </div>
+                                            </td>
+                                            <td> {{ c.phone }} </td>
+                                            <td>
+                                                <center>
+                                                    {% if c.status == "Accepted" %}
+
+                                                     <a href="{% url 'client' c.id_client %}" class="icon-link">
+                                                        <i class="fas fa-eye"></i>
+                                                     </a>
+                                                    {% else %}
+                                                    <a href="#" class="icon-link" onclick="showNoFactureMessage(event)">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    {% endif %}
+                                                 
+                                                    <a href="#" class="icon-link delete text-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ forloop.counter }}">
+                                                        <i class="fas fa-trash-alt"></i>
+                                                    </a>
+                                                    
+                                                    
+                                                     <!-- Modal -->
+                     
+                                                     <div class="custom-modal" id="deleteModal{{ forloop.counter }}">
+                                                        <div class="modal-content">
+                                                            <span class="close" onclick="closeDeleteModal({{ forloop.counter }})">&times;</span>
+                                                            <h5 class="modal-title">
+                                                                {% if c.status == "Accepted" %}
+                                                                    Supprimer le client
+                                                                {% else %}
+                                                                    Supprimer l'invitation
+                                                                {% endif %}
+                                                            </h5>
+                                                            <div class="modal-body">
+                                                                {% if c.status == "Accepted" %}
+                                                                    Voulez-vous vraiment supprimer ce client ?
+                                                                {% else %}
+                                                                    Voulez-vous vraiment supprimer cette invitation en attente ?
+                                                                {% endif %}
+                                                            </div>
+                                                            <div class="modal-footer" style="margin-top: 20px;">
+                                                                <button class="btn btn-secondary" onclick="closeDeleteModal({{ forloop.counter }})">Annuler</button>
+                                                                <form method="POST" action="{% url 'remove_client' %}" style="display: inline;">
+                                                                    {% csrf_token %}
+                                                                    <input type="hidden" name="email" value="{{ c.email }}">
+                                                                    <button type="submit" class="btn btn-danger">Confirmer</button>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    </div>
+                      
+                                                </center>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+  
+    <div id="modal-client" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2 class="modal-title">Ajouter un Client</h2>
+    
+            <!-- Affichage des messages -->
+           
+    
+            <form method="POST" action="{% url 'table' %}" onsubmit="return validateForm(event)">
+                {% csrf_token %}
+                <div class="input-group">
+                    <label>Email:</label>
+                    <input type="email" name="email" required>
+                </div>
+                <div class="form-check-per mt-2">
+                    <input type="checkbox" class="form-check-input" id="confirm-checkbox">
+                    <label class="form-check-label" for="confirm-checkbox">
+                        Confirmer l'envoi de l'invitation
+                    </label>
+                </div>
+            
+                <!-- Message d'erreur -->
+                <div id="error-message" class="text-danger mt-2" style="display: none;">
+                    Vous devez confirmer l'envoi !
+                </div>
+            
+                <!-- Bouton d'envoi avec effet loader -->
+                <button type="submit" class="btn btn-success btn-block mt-3">
+                    <span id="btn-text">Ajouter</span>
+                    <span id="loader" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span>
+                </button>
+                {% if modal_open %}
+                {% if messages %}
+                <div class="alert-container">
+                    {% for message in messages %}
+                        <div class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'warning' %}alert-warning{% elif message.tags == 'error' %}alert-danger{% else %}alert-info{% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            {% endif %}
+            </form>
+        </div>
+    </div>
+    
+
+
+    
+  
+    <script>
+        
+        function showNoFactureMessage(event) {
+            event.preventDefault();
+            alert("Pas de facture, cette personne n'est pas encore devenue un membre.");
+        }
+   
+        
+        function openModal() {
+            document.getElementById("modal-client").style.display = "flex";
+        }
+    
+        function closeModal() {
+            document.getElementById("modal-client").style.display = "none";
+            document.querySelector("#modal-client form").reset();
+    
+            // Supprimer les messages d'alerte
+            var alerts = document.querySelectorAll("#modal-client .alert");
+            alerts.forEach(alert => alert.remove());
+        }
+    
+        window.onclick = function(event) {
+            var modal = document.getElementById("modal-client");
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    
+        // Fonction de validation du formulaire
+        function validateForm(event) {
+            var checkbox = document.getElementById("confirm-checkbox");
+            var errorMessage = document.getElementById("error-message");
+            var btnText = document.getElementById("btn-text");
+            var loader = document.getElementById("loader");
+    
+            // Si la case n'est pas cochée, on bloque l'envoi et affiche un message d'erreur
+            if (!checkbox.checked) {
+                errorMessage.style.display = "block";
+                event.preventDefault(); // Empêche l'envoi du formulaire
+                return false;
+            } else {
+                // Si la case est cochée, on cache le message d'erreur et on montre le loader
+                errorMessage.style.display = "none";
+    
+                // Effet loader
+                btnText.style.display = "none";
+                loader.style.display = "inline-block";
+    
+                return true; // Permet l'envoi du formulaire
+            }
+        }
+       
+       //suppression :
+       function openDeleteModal(counter) {
+        document.getElementById(`deleteModal${counter}`).style.display = "flex";
+    }
+    
+    function closeDeleteModal(counter) {
+        document.getElementById(`deleteModal${counter}`).style.display = "none";
+    }
+    window.addEventListener("click", function(event) {
+        const modals = document.querySelectorAll(".custom-modal");
+        modals.forEach(modal => {
+            if (event.target === modal) {
+                modal.style.display = "none";
+            }
+        });
+    });
+        
+
+    window.addEventListener('DOMContentLoaded', function () {
+       const modalShouldOpen = {{ modal_open|yesno:"true,false" }};
+       if (modalShouldOpen) {
+           document.getElementById("modal-client").style.display = "flex";
+       }
+   });
+    </script>
+    
+{% endblock content %}

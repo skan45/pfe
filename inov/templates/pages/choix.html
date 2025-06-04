@@ -1,0 +1,47 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %} Acceuil {% endblock title %}
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+<div class="content">
+	
+<div class="container-fluid">
+<br>
+<div class="row">
+            <div class="col-md-6">	
+            <div class="card card-body">
+
+
+	               <center><h3 class="card-title ">Choisir le format de téléchargement</h3></center>
+
+
+        
+
+                    <br>
+                    <br>
+
+                    <a class="btn  btn-info"  href="{% url 'GenererFile'  factur.id %}"> Télécharger format Excel <i class="fa fa-download"></i></a>
+                    <br>
+                    <a class="btn  btn-info"  href="{% url 'GenererFile2'  factur.id %}">Télécharger format CSV <i class="fa fa-download"></i></a>
+                    <br>
+                    <a class="btn btn-warning"  href="javascript:history.go(-1)">Annuler</a> 
+
+            </div>
+            </div>
+
+                <div class="col-md-6">
+                    <div class="card card-body">
+
+                    <img src="{{ factur.Img.url}}" width="500" height="600" </>
+                    </div>
+                </div>
+
+</div>
+</div>
+</div>
+
+
+{% endblock %}

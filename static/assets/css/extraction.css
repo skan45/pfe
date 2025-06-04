@@ -1,0 +1,121 @@
+
+    
+  .icon-button {
+
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 20px;
+    margin-right: 5px;
+}
+
+.icon-button:hover {
+    opacity: 0.8;
+}
+
+
+    .create-folder-form {
+        margin-bottom: 2rem;
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .create-folder-form input[type="text"] {
+        padding: 0.5rem 1rem;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        width: 300px;
+        font-size: 16px;
+    }
+
+    .create-folder-form button {
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        padding: 0.6rem 1.2rem;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: background-color 0.3s ease;
+    }
+
+    .folder-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 40px; /* 100px is very large; adjust as needed */
+        justify-content: flex-start; /* optional: align cards left */
+    }
+    
+    .folder-card {
+        flex: 0 0 300px; /* This sets width to 300px */
+        text-align: center;
+        padding: 20px;
+        border: 1px solid #eee;
+        border-radius: 15px;
+        background-color: #f9f9f9;
+        transition: transform 0.3s ease;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    
+
+    .folder-card:hover {
+        transform: scale(1.03);
+        background-color: #fff;
+    }
+
+    .folder-icon {
+        font-size: 60px;
+        color: #f4b400;
+    }
+
+    .folder-name {
+        font-weight: bold;
+        margin: 10px 0;
+    }
+
+    .folder-buttons {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: center;
+    }
+
+    .folder-buttons button {
+        
+   
+        border: none;
+       
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        transition: 0.2s ease;
+    }
+
+    .folder-buttons button:hover {
+        background-color: #3367d6;
+    }
+
+    .file-list {
+        display: none;
+        margin-top: 10px;
+        font-size: 0.9rem;
+        text-align: left;
+    }
+
+    .file-list ul {
+        padding-left: 20px;
+    }
+
+
+    
+    .close {
+       
+        font-size: 22px;
+        font-weight: bold;
+        float: right;
+        cursor: pointer;
+    }
+    
+
+    

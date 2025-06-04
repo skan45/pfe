@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+    
+<head>
+	{% load static %}
+	<title>Registration</title>
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" integrity="sha384-gfdkjb5BdAXd+lj+gudLWI+BXq4IuLW5IT+brZEZsLFm++aCMlF1V92rMkPaX4PP" crossorigin="anonymous">
+   <link rel="stylesheet" href="{% static 'assets/css/register.css' %}">
+
+</head>
+<body>
+	<div class="container h-100">
+		<div class="d-flex justify-content-center h-100">
+			<div class="user_card">
+				<div class="d-flex justify-content-center">
+					<h3 id="form-title">S'inscrire</h3>
+				</div>
+				<div class="d-flex justify-content-center form_container">
+
+					<form method="POST" action="">
+						{% csrf_token %}
+						
+						<div class="input-group">
+							<div class="input-group-append">
+								<span class="input-group-text"><i class="fas fa-envelope-square"></i></span>
+							</div>
+							{{form.email}}
+						</div>
+						<div class="input-group">
+							<div class="input-group-append">
+								<span class="input-group-text"><i class="fas fa-user"></i></span>
+							</div>
+							{{form.first_name}}
+						</div>
+						<div class="input-group">
+							<div class="input-group-append">
+								<span class="input-group-text"><i class="fas fa-user"></i></span>
+							</div>
+							{{form.last_name}}
+						</div>
+						<div class="input-group">
+							<div class="input-group-append">
+								<span class="input-group-text"><i class="fas fa-key"></i></span>
+							</div>
+							{{form.password1}}
+						</div>
+						<div class="input-group">
+							<div class="input-group-append">
+								<span class="input-group-text"><i class="fas fa-key"></i></span>
+							</div>
+							{{form.password2}}
+							
+						</div>
+
+						<div class="input-group">
+                            <div class="input-group-append">
+                                <span class="input-group-text"><i class="fas fa-user-tag"></i></span>
+                            </div>
+                            {{form_2.role}}
+                        </div>
+
+                        {% if form.errors %}
+                        <div class="errorlist">
+                            {% for field in form %}
+                                {% for error in field.errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            {% endfor %}
+                            {% for error in form.non_field_errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+				   		<div class="d-flex justify-content-center mt-4">
+				 			<input class="btn login_btn" type="submit" value="S'inscrire">
+				   		</div>
+
+					</form>
+				</div>
+				
+				<div class="mt-4">
+					<div class="d-flex justify-content-center links">
+						Vous avez déjà un compte? <a href="{% url 'login' %}" class="ml-2">Se Connecter</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script>
+		// Set placeholder values for input fields
+		var form_fields = document.getElementsByTagName('input');
+		
+		form_fields[1].placeholder='Email';
+		form_fields[2].placeholder='Prénom';
+		form_fields[3].placeholder='Nom';
+		form_fields[4].placeholder='Mot de passe';
+		form_fields[5].placeholder='Confirmer le mot de passe';
+
+		// Add form-control class to all input fields
+		for (var field in form_fields) {
+			if (form_fields[field].type != "hidden" && form_fields[field].type != "submit") {
+				form_fields[field].className += ' form-control';
+			}
+		}
+	</script>
+</body>

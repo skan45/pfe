@@ -1,0 +1,372 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block stylesheets %}
+
+<style>
+  form#modelisation-form {
+    background-color: #ffffff;
+    padding: 25px;
+    border-radius: 12px;
+    margin: 0 auto;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  .form-group label {
+    font-weight: bold;
+    color: var(--bs-brand); /* Use custom brand color */
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .form-select, .form-control {
+    border: 1px solid var(--bs-neutral);
+    border-radius: 8px;
+    padding: 10px;
+    width: 100%;
+    transition: border-color 0.3s ease;
+  }
+
+  .form-select:focus, .form-control:focus {
+    border-color: var(--bs-accent);
+    box-shadow: 0 0 5px rgba(var(--bs-accent-rgb), 0.4);
+    outline: none;
+  }
+
+  fieldset {
+    border: 2px dashed var(--bs-highlight);
+    padding: 15px;
+    border-radius: 10px;
+    margin-top: 20px;
+  }
+
+  legend {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--bs-primary);
+    padding: 0 10px;
+    width: auto;
+    margin-bottom: 0;
+  }
+
+  .form-check {
+    padding-left: 1.5rem;
+    margin-bottom: 10px;
+    position: relative;
+  }
+
+  .form-check-input {
+    position: absolute;
+    left: 0;
+    top: 0.25rem;
+    margin-top: 0;
+    margin-left: 0;
+    width: 1rem;
+    height: 1rem;
+    accent-color: var(--bs-success);
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  .form-check-label {
+    margin-bottom: 0;
+    padding-left: 0.25rem;
+  }
+
+  .btn-success {
+    background-color: var(--bs-success);
+    border-color: var(--bs-success);
+    padding: 10px 20px;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+  }
+
+  .btn-success:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  hr {
+    margin: 15px 0;
+    border-color: var(--bs-light);
+  }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <div class="row mb-4">
+    <div class="col">
+      <h1 class="h2 mb-0">{{ title }}</h1>
+      <p class="text-muted">Créez un modèle personnalisé pour extraire automatiquement les informations importantes de vos documents.</p>
+    </div>
+    <div class="col-auto">
+      <a href="{% url 'liste_modeles' %}" class="btn btn-outline-brand">
+        <i class="fas fa-list me-2"></i>Voir mes modèles
+      </a>
+    </div>
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <form id="modelisation-form">
+        {% csrf_token %}
+
+        <!-- Choix du type de document -->
+        <div class="form-group">
+          <label for="doc-type">Choisir un type de document :</label>
+          <select id="doc-type" name="document_type" class="form-select" onchange="fetchFields()" required>
+            <option value="">-- Choisir --</option>
+            <option value="facture" {% if doc_type == 'facture' %}selected{% endif %}>Facture</option>
+            <option value="releve" {% if doc_type == 'releve' %}selected{% endif %}>Relevé</option>
+            <option value="bilan" {% if doc_type == 'bilan' %}selected{% endif %}>Bilan</option>
+          </select>
+        </div>
+
+        <!-- Nom du modèle -->
+        <div class="form-group mt-3">
+          <label for="model-name">Nom du modèle :</label>
+          <input type="text" name="model_name" id="model-name" class="form-control" placeholder="Ex : Modèle Facture Simple" required>
+        </div>
+
+        <!-- Champs dynamiques -->
+        <div id="field-options" class="mt-4">
+          <!-- Checkboxes générées dynamiquement ici -->
+        </div>
+
+        <!-- Loader -->
+        <div id="loader" style="display:none;" class="text-center mt-3">
+          <div class="spinner-border text-brand" role="status">
+            <span class="visually-hidden">Chargement...</span>
+          </div>
+          <p>Chargement des champs...</p>
+        </div>
+
+        <!-- Message d'erreur -->
+        <div id="error-message" class="alert alert-danger mt-3" style="display:none;">
+          Une erreur s'est produite lors du chargement des champs.
+        </div>
+
+        <!-- Bouton de soumission -->
+        <div id="submit-btn-container" style="display:none;" class="mt-3">
+          <button type="submit" class="btn btn-success">
+            <i class="fas fa-save me-2"></i>Sauvegarder le modèle
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+  function fetchFields() {
+    const docType = document.getElementById("doc-type").value;
+    const container = document.getElementById("field-options");
+    const submitBtn = document.getElementById("submit-btn-container");
+    const loader = document.getElementById("loader");
+    const errorMsg = document.getElementById("error-message");
+
+    // Reset
+    container.innerHTML = "";
+    submitBtn.style.display = "none";
+    errorMsg.style.display = "none";
+    
+    if (!docType) {
+      return;
+    }
+    
+    // Show loader
+    loader.style.display = "block";
+
+    // Make AJAX request with CSRF token
+    fetch(`/get-fields/?document_type=${docType}`, {
+      headers: {
+        "X-CSRFToken": "{{ csrf_token }}",
+        "Accept": "application/json"
+      }
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        // Hide loader
+        loader.style.display = "none";
+        
+        if (data.fields && data.fields.length > 0) {
+          const fieldset = document.createElement("fieldset");
+          const legend = document.createElement("legend");
+          legend.textContent = "Champs à extraire :";
+          fieldset.appendChild(legend);
+
+          // Add "Select All" option
+          const allCheckDiv = document.createElement("div");
+          allCheckDiv.className = "form-check mb-3";
+          
+          const allCheckbox = document.createElement("input");
+          allCheckbox.type = "checkbox";
+          allCheckbox.id = "select_all_fields";
+          allCheckbox.className = "form-check-input";
+          allCheckbox.addEventListener("change", function() {
+            const checkboxes = document.querySelectorAll('input[name="fields"]');
+            checkboxes.forEach(checkbox => {
+              checkbox.checked = this.checked;
+            });
+          });
+          
+          const allLabel = document.createElement("label");
+          allLabel.htmlFor = "select_all_fields";
+          allLabel.className = "form-check-label";
+          allLabel.textContent = "Sélectionner tous les champs";
+          allLabel.classList.add("fw-bold");
+          
+          allCheckDiv.appendChild(allCheckbox);
+          allCheckDiv.appendChild(allLabel);
+          fieldset.appendChild(allCheckDiv);
+          
+          // Add divider
+          const divider = document.createElement("hr");
+          fieldset.appendChild(divider);
+
+          // Create fields grid
+          const fieldsGrid = document.createElement("div");
+          fieldsGrid.className = "row row-cols-1 row-cols-md-2 g-3";
+          
+          data.fields.forEach(field => {
+            const colDiv = document.createElement("div");
+            colDiv.className = "col";
+            
+            const checkDiv = document.createElement("div");
+            checkDiv.className = "form-check";
+            
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.name = "fields";
+            checkbox.value = field;
+            checkbox.id = `field_${field.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '')}`;
+            checkbox.className = "form-check-input";
+
+            const label = document.createElement("label");
+            label.htmlFor = checkbox.id;
+            label.className = "form-check-label";
+            label.textContent = field;
+
+            checkDiv.appendChild(checkbox);
+            checkDiv.appendChild(label);
+            colDiv.appendChild(checkDiv);
+            fieldsGrid.appendChild(colDiv);
+          });
+
+          fieldset.appendChild(fieldsGrid);
+          container.appendChild(fieldset);
+          submitBtn.style.display = "block";
+        } else {
+          container.innerHTML = `
+            <div class="alert alert-warning">
+              <i class="fas fa-exclamation-triangle me-2"></i>
+              Aucun champ trouvé pour ce type de document.
+            </div>`;
+        }
+      })
+      .catch(error => {
+        console.error("Erreur lors du chargement des champs :", error);
+        loader.style.display = "none";
+        errorMsg.style.display = "block";
+        errorMsg.textContent = `Erreur : ${error.message}`;
+      });
+  }
+
+  document.getElementById("modelisation-form").addEventListener("submit", function(e) {
+    e.preventDefault();
+    
+    // Collect form data
+    const formData = new FormData(this);
+    
+    // Show loading state
+    const submitBtn = document.querySelector("#submit-btn-container button");
+    const originalBtnText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Enregistrement...';
+    
+    // Submit the form
+    fetch("{% url 'extraction_template' %}", {
+      method: "POST",
+      body: formData,
+      headers: {
+        "X-CSRFToken": formData.get("csrfmiddlewaretoken"),
+        "Accept": "application/json"
+      }
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      // Reset button state
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalBtnText;
+      
+      if (data.status === "success") {
+        // Show success message
+        Swal.fire({
+          title: 'Succès !',
+          text: data.message,
+          icon: 'success',
+          confirmButtonText: 'Voir mes modèles',
+          showCancelButton: true,
+          cancelButtonText: 'Rester sur cette page'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            window.location.href = "{% url 'liste_modeles' %}";
+          }
+        });
+      } else {
+        // Show error message
+        Swal.fire({
+          title: 'Erreur',
+          text: data.message,
+          icon: 'error',
+          confirmButtonText: 'OK'
+        });
+      }
+    })
+    .catch(error => {
+      console.error("Erreur lors de l'enregistrement :", error);
+      
+      // Reset button state
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalBtnText;
+      
+      // Show error message
+      Swal.fire({
+        title: 'Erreur',
+        text: `Une erreur s'est produite : ${error.message}`,
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
+    });
+  });
+
+  // Initialize the form
+  document.addEventListener("DOMContentLoaded", function() {
+    // Check if URL has document_type parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const docType = urlParams.get('document_type');
+    
+    if (docType) {
+      const selectElement = document.getElementById("doc-type");
+      selectElement.value = docType;
+      fetchFields();
+    }
+  });
+</script>
+{% endblock %}

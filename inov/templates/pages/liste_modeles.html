@@ -1,0 +1,213 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+{% load extraction_filters %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row mb-4">
+    <div class="col">
+      <h1 class="h2 mb-0">{{ title }}</h1>
+      <p class="text-muted">Liste de vos modèles d'extraction personnalisés</p>
+    </div>
+    <div class="col-auto">
+      <a href="{% url 'extraction_template' %}" class="btn btn-primary">
+        <i class="fas fa-plus-circle me-2"></i>Nouveau modèle
+      </a>
+    </div>
+  </div>
+
+  <!-- Filtres -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-header bg-light">
+      <h5 class="card-title mb-0">Filtrer par type de document</h5>
+    </div>
+    <div class="card-body">
+      <div class="btn-group w-100" role="group">
+        <a href="{% url 'liste_modeles' %}" class="btn {% if not type_filter %}btn-primary{% else %}btn-outline-primary{% endif %}">
+          Tous
+        </a>
+        {% for type_code, type_label in types %}
+        <a href="{% url 'liste_modeles' %}?type={{ type_code }}" class="btn {% if type_filter == type_code %}btn-primary{% else %}btn-outline-primary{% endif %}">
+          {{ type_label }}
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  {% if models %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+      {% for model in models %}
+        <div class="col">
+          <div class="card h-100 shadow-sm">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+              <h5 class="card-title mb-0 tussen-truncate">
+                {{ model.name }}
+                {% if model.is_default %}
+                  <span class="badge bg-success ms-2" data-bs-toggle="tooltip" title="Modèle par défaut pour {{ model.get_type_document_display }}">
+                    <i class="fas fa-star"></i>
+                  </span>
+                {% endif %}
+              </h5>
+              <div class="dropdown">
+                <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="fas fa-ellipsis-v"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                  <li><a class="dropdown-item" href="{% url 'detail_modele' model.id %}">
+                    <i class="fas fa-eye me-2"></i>Détails
+                  </a></li>
+                  <li><button class="dropdown-item" type="button" onclick="setDefaultModel({{ model.id }})">
+                    <i class="fas fa-star me-2"></i>Définir par défaut
+                  </button></li>
+                  <li><button class="dropdown-item text-danger" type="button" onclick="confirmDelete({{ model.id }}, '{{ model.name|escapejs }}')">
+                    <i class="fas fa-trash-alt me-2"></i>Supprimer
+                  </button></li>
+                </ul>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="mb-2">
+                <span class="badge bg-primary">{{ model.get_type_document_display }}</span>
+                <small class="text-muted ms-2">Créé le {{ model.created_at|date:"d/m/Y" }}</small>
+              </div>
+              <p class="card-text">
+                <strong>Champs extraits ({{ model.champs_choisis|length }}) :</strong>
+              </p>
+              <div class="champs-container">
+                {% for champ in model.champs_choisis|slice:":5" %}
+                  <span class="badge bg-light text-dark mb-1">{{ champ }}</span>
+                {% endfor %}
+                {% if model.champs_choisis|length > 5 %}
+                  <span class="badge bg-secondary mb-1">+{{ model.champs_choisis|length|add:"-5" }}</span>
+                {% endif %}
+              </div>
+            </div>
+            <div class="card-footer bg-white">
+              <a href="{% url 'detail_modele' model.id %}" class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-info-circle me-1"></i>Détails
+              </a>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="alert alert-info">
+      <i class="fas fa-info-circle me-2"></i>
+      {% if type_filter %}
+        Vous n'avez pas encore créé de modèle d'extraction pour les {{ type_filter|get_type_label }}.
+      {% else %}
+        Vous n'avez pas encore créé de modèle d'extraction.
+      {% endif %}
+      <a href="{% url 'extraction_template' %}" class="alert-link">Créer un modèle</a>
+    </div>
+  {% endif %}
+</div>
+
+<!-- Modal de confirmation de suppression -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteModalLabel">Confirmer la suppression</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Êtes-vous sûr de vouloir supprimer le modèle <strong id="model-name-to-delete"></strong> ?
+        <p class="text-danger mt-2"><i class="fas fa-exclamation-triangle me-2"></i>Cette action est irréversible.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+        <form id="delete-form" method="POST" action="">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger">Supprimer</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+  });
+
+  function confirmDelete(modelId, modelName) {
+    document.getElementById('model-name-to-delete').textContent = modelName;
+    document.getElementById('delete-form').action = `{% url 'supprimer_modele' 0 %}`.replace('0', modelId);
+    var deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    deleteModal.show();
+  }
+
+  function setDefaultModel(modelId) {
+    fetch(`{% url 'set_default_model' 0 %}`.replace('0', modelId), {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': '{{ csrf_token }}',
+        'Content-Type': 'application/json'
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.status === 'success') {
+        Swal.fire({
+          title: 'Succès !',
+          text: data.message,
+          icon: 'success',
+          confirmButtonText: 'OK'
+        }).then(() => {
+          location.reload();
+        });
+      } else {
+        Swal.fire({
+          title: 'Erreur',
+          text: data.message,
+          icon: 'error',
+          confirmButtonText: 'OK'
+        });
+      }
+    })
+    .catch(error => {
+      console.error('Erreur lors de la définition du modèle par défaut:', error);
+      Swal.fire({
+        title: 'Erreur',
+        text: 'Une erreur s\'est produite lors de la définition du modèle par défaut.',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
+    });
+  }
+</script>
+{% endblock %}
+
+{% block stylesheets %}
+<style>
+  .card {
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+  }
+  
+  .champs-container {
+    min-height: 40px;
+  }
+  
+  .badge {
+    font-size: 0.75rem;
+    padding: 0.35em 0.65em;
+    margin-right: 0.25rem;
+  }
+</style>
+{% endblock %}

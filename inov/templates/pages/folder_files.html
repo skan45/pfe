@@ -1,0 +1,653 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block stylesheets %}
+<link rel="stylesheet" href="{% static 'assets/css/extraction.css' %}">
+<style>
+  .container-fluid {
+    padding: 30px;
+  }
+  
+  .card {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    margin-bottom: 20px;
+  }
+  
+  .card-header {
+    font-weight: bold;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .file-list-header {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .folder-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+  
+  .folder-icon {
+    font-size: 2rem;
+    color: #6c757d;
+  }
+  
+  .folder-title {
+    margin: 0;
+    font-size: 1.5rem;
+  }
+  .spinner-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: var(--border-radius);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 0.625rem;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+
+  .spinner-text {
+    margin-top: 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--primary);
+  }
+
+  .spinner-border {
+    width: 2rem;
+    height: 2rem;
+    color: var(--primary);
+  }
+
+  .file-count {
+    background-color: #e9ecef;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+  }
+  
+  .back-button {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    color: #495057;
+    padding: 8px 15px;
+    border-radius: 4px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s;
+  }
+  
+  .back-button:hover {
+    background-color: #e9ecef;
+    text-decoration: none;
+  }
+  
+  .file-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+  
+  .file-table thead {
+    background-color: #f8f9fa;
+  }
+  
+  .file-table th {
+    padding: 15px;
+    font-weight: 600;
+    text-align: left;
+    border-bottom: 2px solid #dee2e6;
+  }
+  
+  .file-table td {
+    padding: 15px;
+    vertical-align: middle;
+    border-bottom: 1px solid #dee2e6;
+  }
+  
+  .file-table tr:last-child td {
+    border-bottom: none;
+  }
+  
+  .file-table tr:hover {
+    background-color: #f8f9fa;
+  }
+  
+  .file-icon {
+    font-size: 1.5rem;
+    color: #6c757d;
+    width: 40px;
+    text-align: center;
+  }
+  
+  .file-preview {
+    width: 50px;
+    height: 70px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+  }
+  
+  .file-name {
+    font-weight: 500;
+    color: #495057;
+  }
+  
+  .file-meta {
+    font-size: 0.85rem;
+    color: #6c757d;
+  }
+  
+  .file-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+  
+  .file-actions button {
+    border: none;
+    background: none;
+    padding: 5px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .file-actions button:hover {
+    background-color: #f0f0f0;
+  }
+  
+  .btn-view {
+    color: #17a2b8;
+  }
+  
+  .btn-extract {
+    color: #28a745;
+  }
+  
+  .btn-edit {
+    color: #ffc107;
+  }
+  
+  .btn-delete {
+    color: #dc3545;
+  }
+  
+  .empty-state {
+    text-align: center;
+    padding: 50px 0;
+    color: #6c757d;
+  }
+  
+  .empty-state i {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    opacity: 0.7;
+  }
+  
+  .empty-state h4 {
+    margin-bottom: 10px;
+    font-weight: normal;
+  }
+  
+  .upload-zone {
+    border: 2px dashed #dee2e6;
+    border-radius: 8px;
+    padding: 30px;
+    text-align: center;
+    margin: 20px 0;
+    background-color: #f8f9fa;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  
+  .upload-zone:hover {
+    border-color: #28a745;
+    background-color: #f0f9f0;
+  }
+  
+  .upload-icon {
+    font-size: 2.5rem;
+    color: #28a745;
+    margin-bottom: 15px;
+  }
+  
+  .pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+  }
+  
+  .pagination .page-item .page-link {
+    padding: 8px 16px;
+    color: #495057;
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+  }
+  
+  .pagination .page-item.active .page-link {
+    background-color: #007bff;
+    border-color: #007bff;
+    color: #fff;
+  }
+  
+  .pagination .page-item .page-link:hover {
+    background-color: #e9ecef;
+  }
+  
+  /* Modal styles */
+  .modal-header.bg-danger .modal-title,
+  .modal-header.bg-danger .btn-close {
+    color: white;
+  }
+  
+  .modal-footer {
+    justify-content: space-between;
+  }
+</style>
+{% endblock stylesheets %}
+
+{% block content %}
+<!-- Bootstrap Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<div class="container-fluid">
+  <!-- Header with folder info and back button -->
+  <div class="file-list-header">
+    <div class="folder-info">
+      <div class="folder-icon">
+        <i class="fas fa-folder-open" style="color: {{ folder.color|default:'#6c757d' }}"></i>
+      </div>
+      <div>
+        <h4 class="folder-title">{{ folder.name }}</h4>
+        <span class="file-count">{{ folder.files.count }} fichier(s)</span>
+      </div>
+    </div>
+    <a href="{% url 'extraction' %}" class="back-button">
+      <i class="fas fa-arrow-left"></i> Retour aux dossiers
+    </a>
+  </div>
+  
+  <!-- Upload zone -->
+  <div class="upload-zone" onclick="triggerUpload('{{ folder.id }}')">
+    <div class="upload-icon">
+      <i class="fas fa-cloud-upload-alt"></i>
+    </div>
+    <h5>Glissez et déposez vos fichiers ici</h5>
+    <p class="text-muted">ou cliquez pour sélectionner des fichiers</p>
+    <form id="upload-form-{{ folder.id }}" method="post" enctype="multipart/form-data" action="{% url 'upload_files' folder.id %}" style="display: none;">
+      {% csrf_token %}
+      <input type="hidden" name="folder_id" value="{{ folder.id }}">
+      <input type="file" name="files" id="file-input-{{ folder.id }}" multiple onchange="submitUpload('{{ folder.id }}')">
+    </form>
+  </div>
+  
+  <!-- Files table -->
+  {% if folder.files.all %}
+  <div class="card">
+    <div class="card-body p-0">
+      <table class="file-table">
+        <thead>
+          <tr>
+            <th width="5%">#</th>
+            <th width="10%">Aperçu</th>
+            <th width="40%">Nom du fichier</th>
+            <th width="15%">Taille</th>
+            <th width="15%">Date d'ajout</th>
+            <th width="15%">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for file in folder.files.all %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>
+              {% with filename=file.file.name|lower %}
+                {% if ".pdf" in filename %}
+                  <i class="far fa-file-pdf file-icon text-danger"></i>
+                {% elif ".jpg" in filename or ".jpeg" in filename or ".png" in filename %}
+                  <img src="{{ file.file.url }}" alt="Aperçu" class="file-preview">
+                {% elif ".doc" in filename or ".docx" in filename %}
+                  <i class="far fa-file-word file-icon text-primary"></i>
+                {% elif ".xls" in filename or ".xlsx" in filename %}
+                  <i class="far fa-file-excel file-icon text-success"></i>
+                {% else %}
+                  <i class="far fa-file file-icon"></i>
+                {% endif %}
+              {% endwith %}
+            </td>
+            <td>
+              <div class="file-name">{{ file.file.name|slice:"15:" }}</div>
+              <div class="file-meta">Type: {% with ext=file.file.name.split|last %}{{ ext|upper }}{% endwith %}</div>
+            </td>
+            <td>{{ file.file.size|filesizeformat }}</td>
+            <td>{{ file.uploaded_at|date:"d/m/Y H:i" }}</td>
+            <td>
+              <div class="file-actions">
+                <button class="btn-view" title="Voir le fichier" onclick="window.open('{{ file.file.url }}', '_blank')">
+                  <i class="fas fa-eye"></i>
+                </button>
+                <!-- Passe aussi folder.id au bouton -->
+<button class="btn-extract"
+        title="Extraire les données"
+        onclick="modelsmodal('{{ file.id }}', '{{ file.folder.id }}')">
+  <i class="fas fa-file-export"></i>
+</button>
+
+                {% comment %} <button class="btn-edit" title="Modifier" onclick="editFile('{{ file.id }}')">
+                  <i class="fas fa-edit"></i>
+                </button> {% endcomment %}
+                <button class="btn-delete" title="Supprimer" data-bs-toggle="modal" data-bs-target="#deleteFileModal{{ file.id }}">
+                  <i class="fas fa-trash-alt"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+          
+          <!-- Delete File Modal -->
+          <div class="modal fade" id="deleteFileModal{{ file.id }}" tabindex="-1" aria-labelledby="deleteFileModalLabel{{ file.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content">
+                <form method="POST" action="{% url 'delete_file' file.id %}">
+                  {% csrf_token %}
+                  <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="deleteFileModalLabel{{ file.id }}">
+                      <i class="fas fa-exclamation-triangle me-2"></i>
+                      Confirmation de suppression
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                  </div>
+                  <div class="modal-body">
+                    <p>Voulez-vous vraiment supprimer le fichier <strong>{{ file.file.name|slice:"15:" }}</strong> ?</p>
+                    <p class="text-danger">
+                      <i class="fas fa-exclamation-circle me-1"></i>
+                      Cette action est irréversible.
+                    </p>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                      <i class="fas fa-times me-1"></i> Annuler
+                    </button>
+                    <button type="submit" class="btn btn-danger">
+                      <i class="fas fa-trash-alt me-1"></i> Supprimer
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <!--modal d'extraction-->
+          <div
+  class="modal fade"
+  id="extractionModelModal"
+  tabindex="-1"
+  aria-labelledby="extractionModelModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="extractionModelModalLabel">
+          Choisir un modèle d'extraction
+        </h5>
+        <button
+          type="button"
+          class="btn-close btn-close-white"
+          data-bs-dismiss="modal"
+          aria-label="Fermer"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <!-- Format Selection -->
+         <input type="hidden" id="selected-file-id" name="file_id" value="">
+
+        
+        <ul class="list-group" id="extraction-model-list">
+          <!-- Models will be injected here -->
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Fermer
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          id="confirmExtractionButton"
+        >
+          Confirmer
+        </button>
+       
+      </div>
+      
+    </div>
+  </div>
+</div>
+<!--fin modal -->
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+
+
+  <!-- Pagination -->
+  <nav aria-label="Page navigation">
+    <ul class="pagination">
+      <li class="page-item disabled">
+        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Précédent</a>
+      </li>
+      <li class="page-item active"><a class="page-link" href="#">1</a></li>
+      <li class="page-item"><a class="page-link" href="#">2</a></li>
+      <li class="page-item"><a class="page-link" href="#">3</a></li>
+      <li class="page-item">
+        <a class="page-link" href="#">Suivant</a>
+      </li>
+    </ul>
+  </nav>
+  
+  {% else %}
+  <!-- Empty state -->
+  <div class="empty-state">
+    <i class="far fa-folder-open"></i>
+    <h4>Aucun fichier dans ce dossier</h4>
+    <p>Utilisez la zone d'upload ci-dessus pour ajouter des fichiers.</p>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+  function triggerUpload(folderId) {
+    document.getElementById('file-input-' + folderId).click();
+  }
+
+  function submitUpload(folderId) {
+    document.getElementById('upload-form-' + folderId).submit();
+  }
+  
+  
+  
+  function editFile(fileId) {
+    // Redirection vers la page d'édition pour ce fichier
+    window.location.href = `/edit-file/${fileId}/`;
+  }
+  
+  // Enable drag and drop for upload zone
+  const uploadZone = document.querySelector('.upload-zone');
+  
+  uploadZone.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    this.classList.add('bg-light');
+  });
+  
+  uploadZone.addEventListener('dragleave', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    this.classList.remove('bg-light');
+  });
+  
+  uploadZone.addEventListener('drop', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    this.classList.remove('bg-light');
+    
+    const folderId = this.getAttribute('data-folder-id');
+    const fileInput = document.getElementById('file-input-' + folderId);
+    fileInput.files = e.dataTransfer.files;
+    submitUpload(folderId);
+  });
+</script>
+
+<!--script pour le modal d'extraction -->
+<script>
+async function modelsmodal(fileId, folderId) {
+    // Stocke le fileId dans un input hidden si besoin
+    const hiddenInput = document.getElementById("selected-file-id");
+    if (hiddenInput) hiddenInput.value = fileId;
+
+    const list = document.getElementById('extraction-model-list');
+    list.innerHTML = '<li class="list-group-item">Chargement des modèles...</li>';
+
+    try {
+        const response = await fetch(`/get-default-models/${folderId}/`);
+        if (!response.ok) throw new Error('Erreur de chargement des modèles');
+
+        const { data } = await response.json();
+        list.innerHTML = ''; // reset liste
+
+        if (!data || data.length === 0) {
+            list.innerHTML = '<li class="list-group-item">Aucun modèle disponible</li>';
+            return;
+        }
+
+        data.forEach(group => {
+            const groupHeader = document.createElement('h6');
+            groupHeader.className = 'mt-3 fw-bold';
+            groupHeader.textContent = `Modèles pour ${group.type_document}`;
+            list.appendChild(groupHeader);
+
+            group.models.forEach(model => {
+                const item = document.createElement('div');
+                item.className = 'form-check';
+
+                const radio = document.createElement('input');
+                radio.className = 'form-check-input';
+                radio.type = 'radio';
+                radio.name = `model-${group.type_document}`;
+                radio.value = model.id;
+                radio.id = `model-${group.type_document}-${model.id}`;
+
+                if (model.is_default) radio.checked = true;
+
+                const label = document.createElement('label');
+                label.className = 'form-check-label';
+                label.htmlFor = radio.id;
+                label.textContent = model.name;
+
+                item.appendChild(radio);
+                item.appendChild(label);
+                list.appendChild(item);
+            });
+        });
+
+        const myModal = new bootstrap.Modal(document.getElementById('extractionModelModal'));
+        myModal.show();
+
+    } catch (err) {
+        console.error('Erreur lors de la récupération des modèles :', err);
+        list.innerHTML = '<li class="list-group-item text-danger">Erreur de chargement</li>';
+    }
+}
+
+
+    
+  // ✅ Fonction d'extraction appelée à la confirmation
+  document.getElementById("confirmExtractionButton").addEventListener("click", async () => {
+    const fileId = document.getElementById("selected-file-id").value;
+   
+    const selectedModel = document.querySelector("input[type=radio]:checked");
+    const loader = document.getElementById("spinner-extract-loader");
+
+    if (!fileId || !selectedModel) {
+      alert("Veuillez sélectionner un modèle.");
+      return;
+    }
+
+    const modelId = selectedModel.value;
+
+    try {
+      const formData = new FormData();
+      formData.append("model_id", modelId);
+     
+
+      const response = await fetch(`/extract-data/${fileId}/`, {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": getCookie("csrftoken"),
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.error || "Erreur d'extraction");
+      }
+
+      const blob = await response.blob();
+      const a = document.createElement("a");
+      a.href = window.URL.createObjectURL(blob); 
+      a.download = `extraction_${fileId}.json`;
+
+      a.click();
+      a.remove();
+
+      bootstrap.Modal.getInstance(document.getElementById('extractionModelModal')).hide();
+    } catch (err) {
+      console.error("Erreur d'extraction :", err);
+      alert("Une erreur est survenue : " + err.message);
+    }
+  });
+
+  // 🔐 Fonction CSRF helper
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== "") {
+      const cookies = document.cookie.split(";");
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === name + "=") {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+</script>
+
+
+
+{% endblock content %}

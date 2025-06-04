@@ -1,0 +1,33 @@
+<div class="sidebar bg-primary text-white">
+    <div class="sidebar-wrapper">
+        <div class="logo p-3">
+            <a href="#" class="text-white fw-bold text-decoration-none">X-Facture</a>
+        </div>
+
+        {% if user.is_authenticated %}
+        <ul class="nav flex-column">
+            <!--
+            <li class="nav-item">
+                <a class="nav-link text-white active" href="{% url 'homeClient' %}">
+                    <i class="fas fa-chart-pie"></i> Factures
+                </a>
+            </li>-->
+            <li class="nav-item">
+                <a class="nav-link text-white" href="{% url 'notifications' %}">
+                    <i class="fas fa-bell"></i> Notifications
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white" href="{% url 'unified_profile_view' %}">
+                    <i class="fas fa-user"></i> Profil
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white" href="{% url 'logout' %}">
+                    <i class="fas fa-sign-out-alt"></i> Se déconnecter
+                </a>
+            </li>
+        </ul>
+        {% endif %}
+    </div>
+</div>

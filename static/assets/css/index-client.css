@@ -1,0 +1,121 @@
+
+
+
+
+  
+
+    .card-body {
+        background: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(0, 128, 128, 0.1);
+        padding: 25px;
+        transition: transform 0.2s ease-in-out;
+        max-height: 600px; /* Hauteur maximale pour la carte */
+        overflow-y: auto;
+    }
+
+    .card-body:hover {
+        transform: scale(1.01);
+    }
+
+    h4.text-success {
+        color: #0d6efd; 
+        font-weight: bold;
+    }
+
+    h1 {
+        color: #198754; 
+        font-size: 2.5rem;
+    }
+
+    .btn-success, .btn-info, .btn-warning {
+        border-radius: 30px;
+        font-weight: bold;
+        padding: 10px 20px;
+        transition: 0.3s ease;
+    }
+
+    .btn-info:hover {
+        background-color: #157347 ;
+        color: white ;
+    }
+
+    
+    table {
+        width: 100%;
+    }
+
+    table th{
+        background-color: #084688;
+        color: white;
+        padding: 15px;
+        text-align: center;
+        vertical-align: middle !important;
+    }
+    table td {
+        text-align: center;
+        vertical-align: middle !important;
+        padding: 15px;
+    }
+
+    table tr:hover {
+        background-color: #f1f9ff;
+    }
+
+    .form-control, select {
+        border-radius: 10px;
+        border: 1px solid #cfd8dc;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .modal-content {
+        border-radius: 10px;
+    }
+
+    .img-responsive {
+        border-radius: 10px;
+        border: 3px solid #0d6efd;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: #e3f2fd;
+    }
+    .drop-zone {
+        border: 2px dashed #0d6efd;
+        padding: 30px;
+        overflow-y: auto;
+        text-align: center;
+        border-radius: 10px;
+        background-color: #f8f9fa;
+        cursor: pointer;
+        transition: background 0.2s ease-in-out;
+     
+
+      }
+      
+      .drop-zone.dragover {
+        background-color: #e2e6ea;
+        
+      }
+      
+   
+      #file-list {
+        max-height: 100px;  /* Hauteur maximale du conteneur */
+        overflow-y: auto;   /* Ajoute une barre de défilement verticale */
+        margin-top: 10px;
+        padding: 0;
+        list-style: none;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+    }
+    
+    #file-list li {
+        padding: 5px;
+        border-bottom: 1px solid #ddd;
+        font-size: 14px;
+    }
+    

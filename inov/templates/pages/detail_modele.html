@@ -1,0 +1,350 @@
+{% extends 'layouts/base.html' %} 
+{% load static %} {% block title %}{{ title
+}}{% endblock %} {% block content %}
+
+{% load extraction_filters %}
+<div class="container py-4">
+  <div class="row mb-4">
+    <div class="col">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item">
+            <a href="{% url 'liste_modeles' %}">Modèles d'extraction</a>
+          </li>
+          <li class="breadcrumb-item active" aria-current="page">
+            {{ model.name }}
+          </li>
+        </ol>
+      </nav>
+      <h1 class="h2 mb-0 d-flex align-items-center">
+        {{ model.name }} {% if model.is_default %}
+        <span
+          class="badge bg-success ms-2"
+          data-bs-toggle="tooltip"
+          title="Modèle par défaut pour {{ model.get_type_document_display }}"
+        >
+          <i class="fas fa-star"></i>
+        </span>
+        {% endif %}
+      </h1>
+      <p class="text-muted">Détails du modèle d'extraction</p>
+    </div>
+    <div class="col-auto">
+      <div class="btn-group">
+        <button
+          type="button"
+          class="btn btn-outline-primary"
+          onclick="setDefaultModel({{ model.id }})"
+        >
+          <i class="fas fa-star me-2"></i>Définir par défaut
+        </button>
+        <button
+          type="button"
+          class="btn btn-outline-danger"
+          onclick="confirmDelete({{ model.id }}, '{{ model.name }}')"
+        >
+          <i class="fas fa-trash-alt me-2"></i>Supprimer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Informations générales -->
+    <div class="col-md-4 mb-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-light">
+          <h5 class="card-title mb-0">Informations générales</h5>
+        </div>
+        <div class="card-body">
+          <ul class="list-group list-group-flush">
+            <li
+              class="list-group-item d-flex justify-content-between align-items-center"
+            >
+              <span>Type de document</span>
+              <span class="badge bg-primary"
+                >{{ model.get_type_document_display }}</span
+              >
+            </li>
+            <li
+              class="list-group-item d-flex justify-content-between align-items-center"
+            >
+              <span>Nombre de champs</span>
+              <span class="badge bg-secondary"
+                >{{ model.champs_choisis|length }}</span
+              >
+            </li>
+            <li
+              class="list-group-item d-flex justify-content-between align-items-center"
+            >
+              <span>Date de création</span>
+              <span>{{ model.created_at|date:"d/m/Y H:i" }}</span>
+            </li>
+            <li
+              class="list-group-item d-flex justify-content-between align-items-center"
+            >
+              <span>Dernière modification</span>
+              <span>{{ model.updated_at|date:"d/m/Y H:i" }}</span>
+            </li>
+          </ul>
+        </div>
+        <div class="card-footer bg-white">
+          <a
+            href="{% url 'extraction_template' %}?document_type={{ model.type_document }}"
+            class="btn btn-sm btn-outline-primary"
+          >
+            <i class="fas fa-plus-circle me-2"></i>Créer un modèle similaire
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Liste des champs -->
+    <div class="col-md-8 mb-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-light">
+          <h5 class="card-title mb-0">
+            Champs extraits ({{ model.champs_choisis|length }})
+          </h5>
+        </div>
+        <div class="card-body">
+          {% if model.champs_choisis %}
+          <div class="table-responsive">
+            <table class="custom-table table-striped table-hover">
+              <thead>
+                <tr>
+                  <th scope="col">#</th>
+                  <th scope="col">Nom du champ</th>
+                  <th scope="col">Libellé</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for champ in model.champs_choisis %}
+                <tr>
+                  <td>{{ forloop.counter }}</td>
+                  <td><code>{{ champ }}</code></td>
+                  <td>{{ field_labels|get_item:champ|default:champ }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle me-2"></i>Aucun champ
+            sélectionné pour ce modèle.
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Visualisation des champs -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-header bg-light">
+      <h5 class="card-title mb-0">Aperçu du modèle</h5>
+    </div>
+    <div class="card-body">
+      <div class="document-preview p-4 border rounded bg-light">
+        <div class="document-header mb-4 p-3 bg-white rounded shadow-sm">
+          <h6 class="text-center mb-0">
+            Exemple de {{ model.get_type_document_display }}
+          </h6>
+        </div>
+        <div class="document-content p-3 bg-white rounded shadow-sm">
+          {% for champ in model.champs_choisis %}
+          <div
+            class="field-item mb-2 p-2 border border-success rounded position-relative"
+          >
+            <small
+              class="field-label position-absolute top-0 start-0 translate-middle badge bg-success"
+            >
+              {{ champ }}
+            </small>
+            <div class="placeholder-glow mt-2">
+              <span class="placeholder col-7"></span>
+            </div>
+          </div>
+          {% empty %}
+          <div class="text-center text-muted">
+            <i class="fas fa-file-alt fa-3x mb-3"></i>
+            <p>Aucun champ sélectionné pour ce modèle.</p>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de confirmation de suppression -->
+<div
+  class="modal fade"
+  id="deleteModal"
+  tabindex="-1"
+  aria-labelledby="deleteModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteModalLabel">
+          Confirmer la suppression
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        Êtes-vous sûr de vouloir supprimer le modèle
+        <strong id="model-name-to-delete"></strong> ?
+        <p class="text-danger mt-2">
+          <i class="fas fa-exclamation-triangle me-2"></i>Cette action est
+          irréversible.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Annuler
+        </button>
+        <form id="delete-form" method="POST" action="">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger">Supprimer</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function confirmDelete(modelId, modelName) {
+    document.getElementById("model-name-to-delete").textContent = modelName;
+    document.getElementById("delete-form").action =
+      `{% url 'supprimer_modele' 0 %}`.replace("0", modelId);
+
+    const deleteModal = new bootstrap.Modal(
+      document.getElementById("deleteModal")
+    );
+    deleteModal.show();
+  }
+
+  function setDefaultModel(modelId) {
+    fetch(`{% url 'set_default_model' 0 %}`.replace("0", modelId), {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": "{{ csrf_token }}",
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.status === "success") {
+          Swal.fire({
+            title: "Succès !",
+            text: data.message,
+            icon: "success",
+            confirmButtonText: "OK",
+          }).then(() => {
+            location.reload();
+          });
+        } else {
+          Swal.fire({
+            title: "Erreur",
+            text: data.message,
+            icon: "error",
+            confirmButtonText: "OK",
+          });
+        }
+      })
+      .catch((error) => {
+        console.error(
+          "Erreur lors de la définition du modèle par défaut:",
+          error
+        );
+        Swal.fire({
+          title: "Erreur",
+          text: "Une erreur s'est produite lors de la définition du modèle par défaut.",
+          icon: "error",
+          confirmButtonText: "OK",
+        });
+      });
+  }
+
+  // Initialize tooltips
+  document.addEventListener("DOMContentLoaded", function () {
+    var tooltipTriggerList = [].slice.call(
+      document.querySelectorAll('[data-bs-toggle="tooltip"]')
+    );
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+  });
+</script>
+
+<style>
+  .field-item {
+    min-height: 60px;
+  }
+
+  .field-label {
+    font-size: 0.7rem;
+  }
+
+  .document-preview {
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+
+  /* Custom table styles */
+.custom-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 15px 0;
+  font-size: 16px;
+}
+
+.custom-table th, .custom-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.custom-table th {
+  background-color: #f4f4f4;
+  color: #333;
+  font-weight: bold;
+}
+
+.custom-table tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.custom-table tbody tr:hover {
+  background-color: #eaeaea;
+}
+
+.custom-table td code {
+  font-size: 14px;
+  color: #007bff;
+  background-color: #f0f8ff;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+/* Alert message styles */
+.alert-warning {
+  background-color: #fff3cd;
+  color: #856404;
+  border-color: #ffeeba;
+}
+
+
+
+
+</style>
+{% endblock %}

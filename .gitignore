@@ -1,0 +1,48 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.so
+
+# Virtual environment
+**/venv/
+**/env/
+
+
+
+# Django-specific
+*.log
+db.sqlite3
+media/
+staticfiles/
+
+# Flask-specific
+instance/
+*.db
+
+# Unit test / coverage reports
+htmlcov/
+.coverage
+.tox/
+.nox/
+.pytest_cache/
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+
+content
+# PyInstaller
+*.spec
+
+# mypy
+.mypy_cache/
+
+# PyCharm
+.idea/
+
+# VSCode
+.vscode/
+
+# OS-specific
+.DS_Store
+Thumbs.db

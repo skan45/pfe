@@ -1,0 +1,55 @@
+version: '3'
+
+services:
+  dbc:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: xcomtap
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: inov123#
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./seed.sql:/docker-entrypoint-initdb.d/seed.sql
+       
+      #PostgreSQL automatically runs any .sql scripts in the /docker-entrypoint-initdb.d/ directory when the container is first initialized.
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "3000:80"
+    depends_on:
+      - dbc
+    
+
+  web:
+    build: .
+    command: /factureapp/entrypoint.sh
+    volumes:
+      - .:/factureapp
+    container_name: facture_container
+    ports:
+      - "8000:8000"
+    depends_on:
+      - dbc
+
+  minio:
+    image: quay.io/minio/minio
+    container_name: minio
+    ports:
+      - "9000:9000"  # API S3 compatible
+      - "9101:9101"  # Interface web
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+  
+volumes:
+  postgres_data:
+  minio_data:
+  

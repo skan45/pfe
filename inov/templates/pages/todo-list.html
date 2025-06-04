@@ -1,0 +1,285 @@
+
+  {% extends 'layouts/base.html' %}
+
+  {% block title %} Profil {% endblock title %}
+  
+  <!-- Specific CSS goes HERE -->
+  {% block stylesheets %}{% endblock stylesheets %}
+
+  {% block content %}
+
+
+    <div class="container py-5 h-100">
+      <div class="row d-flex justify-content-center align-items-center h-100">
+        <div class="col">
+          <div class="card" id="list1" style="border-radius: .75rem; background-color: #eff1f2;">
+            <div class="card-body py-4 px-4 px-md-5">
+  
+              <p class="h1 text-center mt-3 mb-4 pb-3 text-primary">
+                <i class="fas fa-check-square me-1"></i>
+                <u>Liste des  tâches </u>
+              </p>
+  
+              <div class="pb-2">
+                <div class="card">
+                  <div class="card-body">
+                    <form method="POST" action="">
+                    <div class="d-flex flex-row align-items-center">
+                     
+                      {% csrf_token %}
+                      <input type="text" name="description" class="form-control form-control-lg" id="exampleFormControlInput1"
+                        placeholder="Ajouter une nouvelle tâche...">
+                      <a href="#!" id="calendarIcon" data-mdb-tooltip-init title="Set due date">
+
+                        <i class="fas fa-calendar-alt fa-lg me-3"></i></a>
+                        <input type="datetime-local" name="due_date" id="datePicker"  style="display: none;">
+                      <div>
+                        <button  type="submit" data-mdb-button-init data-mdb-ripple-init class="btn btn-primary">Ajouter</button>
+                      </div>
+                    </div>
+                  </div>
+                </form>
+                </div>
+              </div>
+  
+              <hr class="my-4">
+  
+              <div class="d-flex justify-content-end align-items-center mb-4 pt-2 pb-3">
+                <p class="small mb-0 me-2 text-muted">Filtrer</p>
+                <select data-mdb-select-init>
+                  <option value="1">All</option>
+                  <option value="2">Completed</option>
+                  <option value="3">Active</option>
+                  <option value="4">passed</option>
+                </select>
+                <p class="small mb-0 ms-4 me-2 text-muted">Trier</p>
+                <select data-mdb-select-init>
+                  <option value="1">Added date</option>
+                  <option value="2">Due date</option>
+                </select>
+                <a href="#!" style="color: #23af89;" data-mdb-tooltip-init title="Ascending"><i
+                    class="fas fa-sort-amount-down-alt ms-2"></i></a>
+              </div>
+            
+
+             {% for task in tasks %}
+              <ul class="list-group list-group-horizontal rounded-0">
+                <li
+                  class="list-group-item d-flex align-items-center ps-0 pe-3 py-1 rounded-0 border-0 bg-transparent">
+                  <div class="form-check">
+                    <input class="form-check-input me-0" type="checkbox" value="" id="flexCheckChecked2"
+                      aria-label="..." />
+             
+                  </div>
+                </li>
+                <li
+                  class="list-group-item px-3 py-1 d-flex align-items-center flex-grow-1 border-0 bg-transparent">
+                  <p class="lead fw-normal mb-0">{{task.description}}</p>
+                </li>
+                <li class="list-group-item px-3 py-1 d-flex align-items-center border-0 bg-transparent">
+                  <p class="small mb-0">
+                <div class="badge {% if task.status|lower == 'completed' %}badge-outline-success
+                                                                {% elif task.status|lower == 'active' %}badge-outline-warning
+                                                                {% elif task.status|lower == 'passed' %}badge-outline-danger
+                                                                {% else %}badge-outline-secondary{% endif %}"> 
+                                                    {{ task.status }}
+                                                </div>
+                                                </p>
+                                                </li>
+                <li class="list-group-item px-3 py-1 d-flex align-items-center border-0 bg-transparent">
+                  <div
+                    class="py-2 px-3 me-2 border border-warning rounded-3 d-flex align-items-center bg-body-tertiary">
+                    <p class="small mb-0">
+                      <a href="#!" data-mdb-tooltip-init title="Due on date">
+                        <i class="fas fa-hourglass-half me-2 text-warning"></i>
+                      </a>
+                      {{task.due_date}}
+                    </p>
+                  </div>
+                </li>
+                <li class="list-group-item ps-3 pe-0 py-1 rounded-0 border-0 bg-transparent">
+                  <div class="d-flex flex-row justify-content-end mb-1">
+                    <a href="#" class="text-info" data-mdb-tooltip-init title="Edit todo" data-mdb-toggle="modal" data-mdb-target="#editModal{{ task.id }}">
+                      <i class="fas fa-pencil-alt me-3" ></i></a>
+                      <!-- Modal Edit -->
+<div class="modal fade" id="editModal{{ task.id }}" tabindex="-1" aria-labelledby="editModalLabel{{ task.id }}" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" action="{% url 'edit_task' task.id %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="editModalLabel{{ task.id }}">Modifier la tâche</h5>
+          <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="description{{ task.id }}" class="form-label">Description</label>
+            <input type="text" class="form-control" id="description{{ task.id }}" name="description" value="{{ task.description }}">
+          </div>
+          <div class="mb-3">
+            <label for="dueDate{{ task.id }}" class="form-label">Date limite</label>
+            <input type="datetime-local" class="form-control" id="dueDate{{ task.id }}" name="due_date"
+              value="{{ task.due_date|date:'Y-m-d\\TH:i' }}">
+          </div>
+          <div class="mb-3">
+            <label for="status{{ task.id }}" class="form-label">Statut</label>
+            <select class="form-select" id="status{{ task.id }}" name="status">
+              <option value="Active" {% if task.status == "Active" %}selected{% endif %}>Active</option>
+              <option value="Passed" {% if task.status == "Passed" %}selected{% endif %}>Passed</option>
+              <option value="Completed" {% if task.status == "Completed" %}selected{% endif %}>Completed</option>
+            </select>
+          </div>
+          
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-mdb-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-primary">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+                      <a href="#" class="text-danger" data-mdb-toggle="modal" data-mdb-target="#deleteModal{{ task.id }}"
+                        data-mdb-tooltip-init title="Delete todo">
+                        <i class="fas fa-trash-alt"></i>
+                     </a>
+                     
+                        
+                     
+                     <!-- Modal -->
+                     <div class="modal fade" id="deleteModal{{ task.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ task.id }}" aria-hidden="true">
+                       <div class="modal-dialog">
+                         <div class="modal-content">
+                           <div class="modal-header">
+                             <h5 class="modal-title" id="deleteModalLabel{{ task.id }}">Supprimer la tâche</h5>
+                             <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
+                           </div>
+                           <div class="modal-body">
+                             Voulez-vous vraiment supprimer cette tâche : <strong>"{{ task.description }}"</strong> ?
+                           </div>
+                           <div class="modal-footer">
+                             <button type="button" class="btn btn-secondary" data-mdb-dismiss="modal">Annuler</button>
+                             <a href="{% url 'delete_task' task.id %}" class="btn btn-danger">Confirmer</a>
+                           </div>
+                         </div>
+                       </div>
+                     </div>
+                     
+                  </div>
+                  <div class="text-end text-muted">
+                    <a href="#!" class="text-muted" data-mdb-tooltip-init title="Created date">
+                      <p class="small mb-0"><i class="fas fa-info-circle me-2"></i>{{ task.created_at}}</p>
+                    </a>
+                  </div>
+                </li>
+              </ul>
+              {% empty %}
+              
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  
+<script src="https://cdn.jsdelivr.net/npm/mdb-ui-kit@6.2.0/dist/mdb.min.js"></script>
+
+
+
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+    let calendarIcon = document.getElementById("calendarIcon");
+    let datePicker = document.getElementById("datePicker");
+
+    calendarIcon.addEventListener("click", function (event) {
+        event.preventDefault(); // Empêche l’action par défaut du lien
+
+        datePicker.style.display = "block"; // Affiche le champ datetime-local
+        datePicker.focus(); // Ouvre le sélecteur de date/heure
+    });
+
+    // Cacher le champ si aucune date n'est sélectionnée après avoir cliqué ailleurs
+    datePicker.addEventListener("blur", function () {
+        if (!datePicker.value) {
+            datePicker.style.display = "none";
+        }
+    });
+});
+document.addEventListener('DOMContentLoaded', function () {
+    const tooltipTriggerList = document.querySelectorAll('[data-mdb-tooltip-init]');
+    tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+      new mdb.Tooltip(tooltipTriggerEl);
+    });
+  });
+
+  </script>
+  
+
+
+  
+
+
+ 
+
+   
+
+ 
+  <style>
+    @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css');
+
+    #list1 .form-control {
+  border-color: transparent;
+}
+#list1 .form-control:focus {
+  border-color: transparent;
+  box-shadow: none;
+}
+#list1 .select-input.form-control[readonly]:not([disabled]) {
+  background-color: #fbfbfb;
+}
+.badge {
+    padding: 6px 12px;
+    border-radius: 3px;  /* Rend le badge carré */
+    font-weight: 600;
+    display: inline-block;
+}
+
+
+    .badge-outline-success {
+        color: #24983f;
+        border: 1px solid #24983f;
+        background-color: rgba(40, 167, 69, 0.1);
+    }
+
+    .badge-outline-warning {
+        color: #ff9800;
+        border: 1px solid #ff9800;
+        background-color: rgba(255, 152, 0, 0.1);
+    }
+
+    .badge-outline-danger {
+        color: #dc3545;
+        border: 1px solid #dc3545;
+        background-color: rgba(220, 53, 69, 0.1);
+    }
+
+    .badge-outline-secondary {
+        color: #6c757d;
+        border: 1px solid #6c757d;
+        background-color: rgba(108, 117, 125, 0.1);
+        .modal .btn:focus {
+    box-shadow: none !important;
+    transform: none !important;
+    scale: 1 !important;
+  }
+
+  .modal .btn {
+    transition: none !important;
+  }
+    }
+    </style>
+    {% endblock %}

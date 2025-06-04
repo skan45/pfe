@@ -1,0 +1,64 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %} Acceuil {% endblock title %}
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+<div class="content">
+	
+<div class="container-fluid">
+<br>
+<div class="row">
+<div class="col-md-6">	
+<div class="card card-body">
+
+
+	<h4>Voulez vous vraiment supprimer ce client ?</h4>
+
+		<form action="{% url 'remove_client' c %}" method="POST">
+
+				
+				{% csrf_token %}
+
+				<br>
+				<br>
+				<a class="btn btn-warning"  href="javascript:history.go(-1)">Annuler</a> 
+
+				<input value="Confirmer" class="btn btn-danger" type="submit" name="Confirm" href="javascript:history.go(-1)" </>
+
+		</form>
+
+	</div>
+	</div>
+
+
+                            <div class="card card-user "><center>
+                            	 <div class="card-image">
+                                    <img src="https://ununsplash.imgix.net/photo-1431578500526-4d9613015464?fit=crop&fm=jpg&h=300&q=75&w=400" alt="...">
+                                </div>
+                                <div class="card-body">
+                                    <div class="author">
+                                        <a href="#">
+                                            <img class="avatar border-gray" src="{{c.profile_pic.url}}" alt="...">
+                                            <h3>
+                                                {{c.nom}} {{c.prénom}}
+                                            </h3>
+
+                                        </a>
+                                        <p class="description">
+                                            {{ c.email }}
+                                        </p>
+                                    </div>
+                                    <p class="description text-center">
+                                        {{client.description}}
+                                    </p>
+                                </div></center>
+                            </div>
+	
+</div>
+</div>
+</div>
+
+{% endblock %}

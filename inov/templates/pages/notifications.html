@@ -1,0 +1,46 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+
+            <!-- Notifications Section -->
+            {% if messages %}
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white border-bottom d-flex align-items-center">
+                        <i class="fas fa-bell text-primary me-2 fs-5"></i>
+                        <h5 class="mb-0">Notifications</h5>
+                    </div>
+                    <div class="card-body">
+                        {% for message in messages %}
+                            <div class="alert 
+                                {% if message.tags == 'success' %}alert-success
+                                {% elif message.tags == 'warning' %}alert-warning
+                                {% elif message.tags == 'error' %}alert-danger
+                                {% else %}alert-info{% endif %} 
+                                alert-dismissible fade show" role="alert">
+                                
+                                <i class="fas 
+                                    {% if message.tags == 'success' %}fa-check-circle text-success
+                                    {% elif message.tags == 'warning' %}fa-exclamation-triangle text-warning
+                                    {% elif message.tags == 'error' %}fa-times-circle text-danger
+                                    {% else %}fa-info-circle text-info{% endif %} me-2"></i>
+                                
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% else %}
+                <div class="alert alert-light text-muted border">
+                    <i class="fas fa-info-circle me-2"></i> Aucune notification pour le moment.
+                </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

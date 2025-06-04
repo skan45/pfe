@@ -1,0 +1,431 @@
+{% extends 'layouts/base-client.html' %}
+{% load static %}
+
+{% block title %}Accueil{% endblock title %}
+
+{% block stylesheets %}
+<link rel="stylesheet" href="{% static 'assets/css/index-client.css' %}">
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="mb-4 animate__animated animate__fadeInDown">
+        <div>
+            <h2 class="fw-bold text-primary">👋 Bienvenue sur votre espace documents</h2>
+            <p class="text-muted">Déposez et suivez l'état de traitement de vos factures, bilans et relevés</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow-sm rounded-4 mb-4">
+                <div class="card-body">
+                    <h4 class="card-title text-center mb-4">Ajouter un nouveau document</h4>
+                    <hr>
+                    <form id="upload-form" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <label class="form-label fw-semibold">Type de document</label>
+                                <select name="doc_type" class="form-select" required>
+                                    <option value="">-- Sélectionnez un type --</option>
+                                    <option value="Facture">Facture</option>
+                                    <option value="Bilan">Bilan</option>
+                                    <option value="Relevé">Relevé</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="drop-zone" class="drop-zone bg-light p-5 text-center rounded-3 border border-2 border-dashed position-relative mb-4">
+                            <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
+                            <p>Déposez vos fichiers ici ou cliquez pour sélectionner</p>
+                            <input type="file" name="files" id="file-input" multiple hidden>
+                            <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('file-input').click();">
+                                <i class="fas fa-upload"></i> Choisir les fichiers
+                            </button>
+                            <ul id="file-list" class="list-unstyled mt-3 text-start"></ul>
+                        </div>
+                        
+                        <div class="progress mb-4" style="height: 20px; display: none;" id="upload-progress-bar">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" 
+                                role="progressbar" style="width: 0%" id="progress-bar-inner">0%</div>
+                        </div>
+                        
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-paper-plane"></i> Envoyer
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card shadow-sm rounded-4">
+                <div class="card-body">
+                    <form method="GET" action=".">
+                        <div class="row align-items-end">
+                            <div class="col-md-4"> 
+                                <label class="form-label fw-semibold">Date de création</label>
+                                <input type="date" class="form-control" id="publishDateMin" name="dateCreation">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">Statut</label>
+                                <select id="statut" class="form-select" name="statut">
+                                    <option selected disabled>Statut</option>
+                                    <option value="Validé">Validé</option>
+                                    <option value="Non Validé">Non Validé</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <button type="submit" class="btn btn-primary w-100"><i class="fas fa-search"></i> Chercher</button>
+                                <a class="btn btn-link w-100" href="{% url 'homeClient' %}"><i class="fas fa-times"></i> Annuler</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm rounded-4">
+    <div class="card-body">
+        <h4 class="fw-semibold text-secondary mb-4"><i class="fas fa-file-alt"></i> Vos documents</h4>
+        
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Aperçu</th>
+                        <th>Type</th>
+                        <th>Date de Création</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for facture in factures %}
+                    <tr>
+                        <td>
+                            {% if facture.file %}
+                            <img src="{{ facture.file.file.url}}" width="80" height="80" class="img-thumbnail cursor-pointer" 
+                                data-toggle="modal" data-target="#myModalFacture{{ forloop.counter }}" />
+                            <div id="myModalFacture{{ forloop.counter }}" class="modal fade" tabindex="-1" role="dialog">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Aperçu de la facture</h5>
+                                            <button class="btn-close" type="button" data-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <img src="{{facture.file.file.url}}" class="img-fluid w-100">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% else %}
+                            <div class="text-center p-3 bg-light rounded">
+                                <i class="fas fa-file-invoice fa-2x text-primary"></i>
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td><span class="badge bg-primary">Facture</span></td>
+                        <td>{{ facture.date_created|date:"d/m/Y H:i" }}</td>
+                        <td>
+                            <span class="badge {% if facture.status == 'Validé' %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                                {{facture.status}}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="btn-group">
+                                <a href="#" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <button 
+                                    class="btn btn-sm btn-outline-danger"
+                                    data-toggle="modal"
+                                    data-target="#deleteModal"
+                                    data-id="{{ facture.id }}"
+                                    data-url="{% url 'supprimer_facture' facture.id %}">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    
+                    {% for bilan in bilans %}
+                    <tr>
+                        <td>
+                            {% if bilan.file %}
+                            <img src="{{ bilan.file.file.url}}" width="80" height="80" class="img-thumbnail cursor-pointer" 
+                                data-toggle="modal" data-target="#myModalBilan{{ forloop.counter }}" />
+                            <div id="myModalBilan{{ forloop.counter }}" class="modal fade" tabindex="-1" role="dialog">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Aperçu du bilan</h5>
+                                            <button class="btn-close" type="button" data-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <img src="{{bilan.file.file.url}}" class="img-fluid w-100">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% else %}
+                            <div class="text-center p-3 bg-light rounded">
+                                <i class="fas fa-chart-bar fa-2x text-success"></i>
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td><span class="badge bg-success">Bilan</span></td>
+                        <td>{{ bilan.date_created|date:"d/m/Y H:i" }}</td>
+                        <td>
+                            <span class="badge {% if bilan.status == 'Validé' %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                                {{bilan.status}}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="btn-group">
+                                <a href="#" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <!-- Bouton de suppression temporairement désactivé -->
+                                <button 
+                                    class="btn btn-sm btn-outline-secondary" 
+                                    disabled
+                                    title="Fonctionnalité de suppression en cours de développement">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    
+                    {% for releve in releves %}
+                    <tr>
+                        <td>
+                            {% if releve.file %}
+                            <img src="{{ releve.file.file.url}}" width="80" height="80" class="img-thumbnail cursor-pointer" 
+                                data-toggle="modal" data-target="#myModalReleve{{ forloop.counter }}" />
+                            <div id="myModalReleve{{ forloop.counter }}" class="modal fade" tabindex="-1" role="dialog">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Aperçu du relevé bancaire</h5>
+                                            <button class="btn-close" type="button" data-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <img src="{{releve.file.file.url}}" class="img-fluid w-100">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% else %}
+                            <div class="text-center p-3 bg-light rounded">
+                                <i class="fas fa-university fa-2x text-info"></i>
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td><span class="badge bg-info">Relevé bancaire</span></td>
+                        <td>{{ releve.date_created|date:"d/m/Y H:i" }}</td>
+                        <td>
+                            <span class="badge {% if releve.status == 'Validé' %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                                {{releve.status}}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="btn-group">
+                                <a href="#" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <!-- Bouton de suppression temporairement désactivé -->
+                                <button 
+                                    class="btn btn-sm btn-outline-secondary" 
+                                    disabled
+                                    title="Fonctionnalité de suppression en cours de développement">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    
+                    {% if not factures and not bilans and not releves %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-muted">
+                            <i class="fas fa-folder-open fa-2x mb-3"></i>
+                            <p>Aucun document trouvé. Utilisez le formulaire ci-dessus pour ajouter vos documents.</p>
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+            
+        <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <form id="delete-form" method="POST" action="">
+                    {% csrf_token %}
+                    <div class="modal-content">
+                        <div class="modal-header bg-danger text-white">
+                            <h5 class="modal-title" id="deleteModalLabel">Confirmer la suppression</h5>
+                            <button type="button" class="btn-close text-white" data-dismiss="modal" aria-label="Fermer"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Êtes-vous sûr de vouloir supprimer ce document ?</p>
+                            <p class="text-muted small">Cette action est irréversible.</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                            <button type="submit" class="btn btn-danger">Oui, supprimer</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const fileList = document.getElementById('file-list');
+        const progressBar = document.getElementById('upload-progress-bar');
+        const progressBarInner = document.getElementById('progress-bar-inner');
+        const uploadForm = document.getElementById('upload-form');
+
+        // Gestion du glisser-déposer
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('bg-primary', 'bg-opacity-10');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('bg-primary', 'bg-opacity-10');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('bg-primary', 'bg-opacity-10');
+            
+            handleFiles(e.dataTransfer.files);
+        });
+
+        // Sélection de fichiers par clic
+        fileInput.addEventListener('change', () => {
+            handleFiles(fileInput.files);
+        });
+
+        // Soumission du formulaire
+        uploadForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (fileList.children.length === 0) {
+                alert('Veuillez sélectionner au moins un fichier.');
+                return;
+            }
+            
+            // Vérification du type de document
+            const docType = document.querySelector('select[name="doc_type"]').value;
+            
+            if (!docType) {
+                alert('Veuillez sélectionner un type de document.');
+                return;
+            }
+            
+            uploadFiles();
+        });
+
+        // Gestion des fichiers sélectionnés
+        function handleFiles(files) {
+            fileList.innerHTML = '';
+            
+            Array.from(files).forEach(file => {
+                const li = document.createElement('li');
+                li.className = 'mb-2 d-flex align-items-center';
+                
+                // Déterminer l'icône en fonction du type de fichier
+                let icon = 'fa-file';
+                if (file.type.includes('pdf')) icon = 'fa-file-pdf';
+                else if (file.type.includes('image')) icon = 'fa-file-image';
+                else if (file.type.includes('word')) icon = 'fa-file-word';
+                else if (file.type.includes('excel') || file.type.includes('spreadsheet')) icon = 'fa-file-excel';
+                
+                li.innerHTML = `
+                    <i class="fas ${icon} text-primary me-2"></i>
+                    <span>${file.name}</span>
+                    <span class="badge bg-secondary ms-2">${formatFileSize(file.size)}</span>
+                `;
+                
+                fileList.appendChild(li);
+            });
+        }
+
+        // Formatage de la taille de fichier
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+            else return (bytes / 1048576).toFixed(1) + ' MB';
+        }
+
+        // Simuler l'upload avec la barre de progression
+        function uploadFiles() {
+            const formData = new FormData(uploadForm);
+            
+            // Show progress bar
+            progressBar.style.display = 'flex';
+            progressBarInner.style.width = '0%';
+            progressBarInner.textContent = '0%';
+            
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', uploadForm.action || window.location.href);
+            
+            xhr.upload.addEventListener('progress', (e) => {
+                if (e.lengthComputable) {
+                    const percentComplete = Math.round((e.loaded / e.total) * 100);
+                    progressBarInner.style.width = percentComplete + '%';
+                    progressBarInner.textContent = percentComplete + '%';
+                }
+            });
+            
+            xhr.addEventListener('load', () => {
+                if (xhr.status === 200) {
+                    progressBarInner.textContent = 'Téléchargement réussi!';
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    progressBarInner.textContent = 'Erreur: ' + xhr.statusText;
+                    progressBarInner.classList.remove('bg-success');
+                    progressBarInner.classList.add('bg-danger');
+                }
+            });
+            
+            xhr.addEventListener('error', () => {
+                progressBarInner.textContent = 'Erreur lors du téléchargement';
+                progressBarInner.classList.remove('bg-success');
+                progressBarInner.classList.add('bg-danger');
+            });
+            
+            xhr.send(formData);
+        }
+
+        // Configuration du modal de suppression
+        $('#deleteModal').on('show.bs.modal', function (event) {
+            const button = $(event.relatedTarget);
+            const id = button.data('id');
+            const url = button.data('url');
+            const form = document.getElementById('delete-form');
+            form.action = url;
+        });
+    });
+</script>
+{% endblock content %}

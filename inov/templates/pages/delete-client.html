@@ -1,0 +1,40 @@
+{% extends 'layouts/base-client.html' %}
+
+{% block title %} Acceuil {% endblock title %}
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+<div class="content">
+	
+<div class="container-fluid">
+<br>
+<div class="row">
+<div class="col-md-6">	
+<div class="card card-body">
+
+
+	<p>Voulez vous vraiment supprimer cette facture ?</p>
+
+		<form action="{% url 'deleteClient' item.id  %}" method="POST">
+
+				
+				{% csrf_token %}
+				<a class="btn btn-warning"  href="javascript:history.go(-1)">Annuler</a> 
+
+				<input value="Confirmer" class="btn btn-danger" type="submit" name="Confirm"  </>
+				<br>
+				<br>
+				<br>
+		
+				<img src="{{ item.Img.url}}" width="500" height="600" </>
+
+
+		</form>
+</div>		
+</div>
+</div>
+</div>
+</div>
+{% endblock %}

@@ -1,0 +1,77 @@
+{% with cached_messages=messages %}
+<nav class="navbar navbar-expand-lg bg-brand text-white mb-4">
+    <div class="container-fluid">
+        <a class="navbar-brand text-white" href="{% url 'home' %}">Dashboard</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navigation" aria-controls="navigation" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse justify-content-end" id="navigation">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item dropdown">
+                    <a href="#" class="nav-link dropdown-toggle text-white" id="notificationDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-bell"></i>
+                        {% if cached_messages and request.resolver_match.view_name != 'notifications' %}
+                            <span class="badge bg-accent">{{ cached_messages|length }}</span>
+                        {% endif %}
+                        <span class="d-lg-none">Notifications</span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a href="#" class="nav-link text-white">
+                        <i class="fas fa-search"></i>
+                        <span class="d-lg-block"> Search</span>
+                    </a>
+                </li>
+            </ul>
+
+            <ul class="navbar-nav ms-auto">
+                {% if user.is_authenticated %}
+
+                        <ul class="navbar-nav ms-auto">
+                {% if user.is_authenticated %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle text-white" href="#" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            {{ request.user.username }}
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="userDropdown">
+                            <li>
+                                 <a class="dropdown-item" href="{% url 'unified_profile_view' %}">Mon Profil</a>
+                            </li>
+
+
+ 
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'logout' %}">Se déconnecter</a></li>
+                        </ul>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="{% url 'register' %}">Register</a>
+                    </li>
+                {% endif %}
+            </ul>
+
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="{% url 'register' %}">Register</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
+{% endwith %}
+<style>
+
+.navbar.bg-brand {
+    background-color: #88C417 !important; /* Mets la couleur souhaitée */
+    color: #fff;
+    border-radius: 18px;           /* Arrondi sur tous les côtés */
+    margin-top: 12px;              /* Optionnel : espace au-dessus */
+    margin-left: 12px;             /* Optionnel : espace à gauche */
+    margin-right: 12px;            /* Optionnel : espace à droite */
+}
+</style>

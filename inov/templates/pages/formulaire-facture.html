@@ -1,0 +1,372 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block stylesheets %}
+
+<style>
+    .file-list-header {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .file-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+  
+  .file-icon {
+    font-size: 2rem;
+    color: #6c757d;
+  }
+  
+  .file-title {
+    margin: 0;
+    font-size: 1.5rem;
+  }
+    .form-section {
+        margin-bottom: 2rem;
+        border: 1px solid #dee2e6;
+        padding: 20px;
+        border-radius: 10px;
+    }
+    .field-label {
+        font-weight: bold;
+    }
+    .validation-toggle {
+        cursor: pointer;
+        font-size: 1.2rem;
+    }
+    .validated {
+        color: green;
+    }
+    .invalidated {
+        color: red;
+    }
+    .validation-toggle:hover {
+        color: #007bff;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div id="timer" class="badge bg-secondary mb-2">⏱️ 00:00</div>
+<button type="button" class="btn btn-outline-secondary mb-3 float-end" data-bs-toggle="modal" data-bs-target="#aideModal">
+  ❓ Aide / Tutoriel
+</button>
+
+<!-- Modal d'aide -->
+<div class="modal fade" id="aideModal" tabindex="-1" aria-labelledby="aideModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+    
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="aideModalLabel">📘 Aide à la validation de la facture</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      </div>
+
+      <div class="modal-body">
+        <p>Voici comment vérifier et valider vos données :</p>
+        <ol>
+          <li>📄 Vérifiez le numéro de facture, la TVA, le montant TTC.</li>
+          <li>👤 Assurez-vous que les informations du fournisseur et du client sont correctes.</li>
+          <li>🛒 Confirmez les produits, quantités, prix unitaires et totaux.</li>
+          <li>💳 Complétez les infos manquantes (paiement, échéance...)</li>
+          <li>✅ Cliquez sur <strong>“Valider”</strong> ou <strong>“Enregistrer”</strong>.</li>
+        </ol>
+
+        <hr>
+
+        <h6>🎥 Tutoriel Vidéo</h6>
+        <div class="ratio ratio-16x9">
+          <iframe src="https://www.youtube.com/embed/YOUR_VIDEO_ID" title="Tutoriel validation facture" allowfullscreen></iframe>
+        </div>
+
+        <hr>
+
+        <p class="mt-3">Besoin d’aide ? <a href="">Contactez le support</a>.</p>
+
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="container mt-5">
+   <div class="file-list-header">
+    
+  <div class="file-info">
+    <div class="file-icon">
+      <!-- Utilisation d'une couleur selon le type de fichier, par exemple : PDF = rouge -->
+      <i class="fas fa-file-alt" style="color: {% if file.file_extension == 'pdf' %}#e74c3c{% else %}#3498db{% endif %};"></i>
+    </div>
+    <div>
+      <h4 class="file-title">{{ file.filename }}</h4>
+      <span class="file-count">
+        {% if file.facture.client %}
+          {{ file.facture.client.nom }} – fichier associé
+        {% else %}
+          Aucun client associé
+        {% endif %}
+      </span>
+    </div>
+  </div>
+  <a href="{% url 'FactureComptable' %}" class="back-button">
+    <i class="fas fa-arrow-left"></i> Retour aux factures
+  </a>
+</div>
+
+ <div class="alert alert-info d-flex justify-content-between align-items-center">
+  <div>
+    <strong>Status :</strong> 
+{% if file.extraction_status == 'processing' %}
+  <span class="badge bg-info text-white"><i class="fas fa-spinner fa-spin"></i> En cours</span>
+{% elif file.extraction_status == 'pending' %}
+  <span class="badge bg-warning text-dark"><i class="fas fa-hourglass-half"></i> En attente</span>
+{% elif file.extraction_status == 'completed' %}
+  <span class="badge bg-success"><i class="fas fa-check-circle"></i> Terminé</span>
+{% else %}
+  <span class="badge bg-danger"><i class="fas fa-times-circle"></i> Échec</span>
+{% endif %}
+
+  </div>
+  <div>
+    <span class="badge bg-primary">Champs extraits : {{ file.extraction_data|length }}</span>
+    <span class="badge bg-danger">Champs manquants : </span>
+  </div>
+</div>
+<div class="progress mb-4">
+  <div id="validationProgress" class="progress-bar" role="progressbar" style="width: 20%;">
+    20% validé
+  </div>
+</div>
+
+<div class="row">
+    
+    <div class="col-md-6">
+    <h3 class="mb-4 text-primary">📝 Vérification des données extraites</h3>
+<input type="text" id="searchFields" class="form-control mb-3" placeholder="🔎 Rechercher un champ...">
+
+    <form id="extractedDataForm" method="post">
+        {% csrf_token %}
+        
+        <!-- Champs simples -->
+        <div class="form-section">
+           {% if file.extraction_data.numero_facture %}
+            <div class="mt-3 d-flex justify-content-between align-items-center">
+                <label class="field-label">Numéro de facture</label>
+                <i class="validation-toggle fas fa-check-circle validated" onclick="toggleValidation(this)"></i>
+            </div>
+            <input type="text" class="form-control" name="numero_facture" value="{{ extraction_data.numero_facture }}" onblur="validateField(this, 'numero_facture')">
+{% endif %}
+                 {% if file.extraction_data.tva %}
+                   <div class="mb-3 d-flex justify-content-between align-items-center">
+                    <label class="field-label">TVA</label>
+                    <i class="validation-toggle fas fa-check-circle validated" onclick="toggleValidation(this)"></i>
+                  </div>
+                  <input type="text" class="form-control" name="tva" value="{{ extraction_data.tva }}" onblur="validateField(this, 'tva')">
+                 {% endif %}
+                 {% if file.extraction_data.montant_ttc %}
+                    <div class="mt-3 d-flex justify-content-between align-items-center">
+                      <label class="field-label">Montant TTC</label>
+                      <i class="validation-toggle fas fa-check-circle validated" onclick="toggleValidation(this)"></i>
+                   </div>
+                   <input type="text" class="form-control" name="montant_ttc" value="{{ extraction_data.montant_ttc }}" onblur="validateField(this, 'montant_ttc')">
+                     {% endif %}
+        </div>
+
+        <!-- Informations fournisseur -->
+         {% if extraction_data.informations %}
+        <div class="form-section">
+            <h5>📌 Informations Fournisseur</h5>
+            {% for key, value in extraction_data.informations.items %}
+                <div class="mb-3 d-flex justify-content-between align-items-center">
+                    <label class="field-label">{{ key|capfirst }}</label>
+                    <i class="validation-toggle fas fa-check-circle validated" onclick="toggleValidation(this)"></i>
+                </div>
+                <input type="text" class="form-control" name="informations_{{ key }}" value="{{ value }}" onblur="validateField(this, 'informations_{{ key }}')">
+            {% endfor %}
+        </div>
+{% endif %}
+        <!-- Informations client -->
+         {% if extraction_data.informations_client %}
+        <div class="form-section">
+            <h5>👤 Informations Client</h5>
+            {% for key, value in extraction_data.informations_client.items %}
+                <div class="mb-3 d-flex justify-content-between align-items-center">
+                    <label class="field-label">{{ key|capfirst }}</label>
+                    <i class="validation-toggle fas fa-check-circle validated" onclick="toggleValidation(this)"></i>
+                </div>
+                <input type="text" class="form-control" name="informations_client_{{ key }}" value="{{ value }}" onblur="validateField(this, 'informations_client_{{ key }}')">
+            {% endfor %}
+        </div>
+        {% endif %}
+{% if extraction_data.produits %}
+<div class="form-section">
+  <h5>🛒 Produits</h5>
+{% for produit in extraction_data.produits %}
+  <div class="produit-item border rounded p-3 mb-3">
+    
+    <!-- Description -->
+    <div class="mb-3 d-flex justify-content-between align-items-center">
+      <label class="field-label">Description</label>
+      <i class="validation-toggle fas fa-check-circle validated" onclick="toggleValidation(this)"></i>
+    </div>
+    <input type="text" class="form-control mb-2" name="produits_{{ forloop.counter0 }}_description" value="{{ produit.description }}" onblur="validateField(this, 'produits_{{ forloop.counter0 }}_description')">
+
+    <!-- Quantité -->
+    <div class="mb-3 d-flex justify-content-between align-items-center">
+      <label class="field-label">Quantité</label>
+      <i class="validation-toggle fas fa-check-circle validated" onclick="toggleValidation(this)"></i>
+    </div>
+    <input type="text" step="any" class="form-control mb-2" name="produits_{{ forloop.counter0 }}_quantite" value="{{ produit.quantite }}" onblur="validateField(this, 'produits_{{ forloop.counter0 }}_quantite')">
+
+    <!-- Prix unitaire -->
+    <div class="mb-3 d-flex justify-content-between align-items-center">
+      <label class="field-label">Prix unitaire</label>
+      <i class="validation-toggle fas fa-check-circle validated" onclick="toggleValidation(this)"></i>
+    </div>
+    <input type="text" step="any" class="form-control mb-2" name="produits_{{ forloop.counter0 }}_prix_unitaire" value="{{ produit.prix_unitaire }}" onblur="validateField(this, 'produits_{{ forloop.counter0 }}_prix_unitaire')">
+
+    <!-- Montant total -->
+    <div class="mb-3 d-flex justify-content-between align-items-center">
+      <label class="field-label">Montant total</label>
+      <i class="validation-toggle fas fa-check-circle validated" onclick="toggleValidation(this)"></i>
+    </div>
+    <input type="text" step="any" class="form-control mb-2" name="produits_{{ forloop.counter0 }}_montant_total" value="{{ produit.montant_total }}" onblur="validateField(this, 'produits_{{ forloop.counter0 }}_montant_total')">
+
+  </div>
+{% endfor %}
+
+       
+
+    </div>
+  {% endif %}
+
+
+        <!-- Autres champs -->
+        <div class="form-section">
+             {% if file.extraction_data.date_echeance %}
+            <div class="mb-3 d-flex justify-content-between align-items-center">
+                <label class="field-label">Date d'échéance</label>
+                <i class="validation-toggle fas fa-check-circle validated" onclick="toggleValidation(this)"></i>
+            </div>
+            <input type="text" class="form-control" name="date_echeance" value="{{ extraction_data.date_echeance }}" onblur="validateField(this, 'date_echeance')">
+{% endif %}
+
+ {% if file.extraction_data.methode_de_paiement %}
+            <div class="mt-3 d-flex justify-content-between align-items-center">
+                <label class="field-label">Méthode de paiement</label>
+                <i class="validation-toggle fas fa-check-circle validated" onclick="toggleValidation(this)"></i>
+            </div>
+            <input type="text" class="form-control" name="methode_de_paiement" value="{{ extraction_data.methode_de_paiement }}" onblur="validateField(this, 'methode_de_paiement')">
+{% endif %}
+{% if file.extraction_data.insights %}
+            <div class="mt-3 d-flex justify-content-between align-items-center">
+                <label class="field-label">Méthode de paiement</label>
+                <i class="validation-toggle fas fa-check-circle validated" onclick="toggleValidation(this)"></i>
+            </div>
+            <input type="text" class="form-control" name="methode_de_paiement" value="{{ extraction_data.insights }}" onblur="validateField(this, 'resumé')">
+{% endif %}
+        </div>
+
+        <button type="submit" class="btn btn-success">💾 Enregistrer les modifications</button>
+        <button type="submit" class="btn btn-primary"> ✅ Valider </button>
+
+
+    </form>
+   
+
+    </div>
+
+    
+   <div class="col-md-6">
+    <br>
+     {% if f.file.facture.status == "Validé" %}
+<span class="badge bg-success">Validé</span>
+{% else %}
+<span class="badge bg-danger">Non validé</span>
+{% endif %}
+<br>
+  {% if file.file_extension in "jpg jpeg png gif" %}
+    <img src="{{ file.file.url }}" width="100%" style="border: 1px solid #ddd; border-radius: 5px;" alt="Aperçu du fichier">
+  {% elif file.file_extension == "pdf" %}
+    <iframe src="{{ file.file.url }}" width="100%"  style="border: 1px solid #ddd;"></iframe>
+  {% else %}
+    <div class="alert alert-warning">
+      ⚠️ Aperçu non disponible pour ce type de fichier ({{ file.file_extension|upper }})
+    </div>
+  {% endif %}
+  <div class="form-section mt-4">
+  <label for="commentaire"><strong>💬 Commentaire</strong></label>
+  <textarea name="commentaire" rows="4" class="form-control" placeholder="Ajouter une note ou une remarque..."></textarea>
+</div>
+
+</div>
+
+
+ 
+</div>
+
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+<script>
+    // Toggle the validation icon between validated and invalidated
+    function toggleValidation(icon) {
+        icon.classList.toggle('validated');
+        icon.classList.toggle('invalidated');
+        icon.classList.toggle('fa-check-circle');
+        icon.classList.toggle('fa-times-circle');
+    }
+
+    // Real validation logic for each field
+    function validateField(input, fieldName) {
+        const icon = input.parentElement.querySelector('.validation-toggle');
+        let isValid = false;
+
+        // Custom validation based on field name
+        if (fieldName === 'tva' || fieldName === 'montant_ttc') {
+            isValid = /^\d+(\.\d{1,2})?$/.test(input.value);  // Validates numeric fields with optional decimals
+        } else if (fieldName === 'date_echeance') {
+            isValid = /^\d{4}-\d{2}-\d{2}$/.test(input.value);  // Validates date in YYYY-MM-DD format
+        } else {
+            isValid = input.value.trim() !== '';  // Ensures the field is not empty
+        }
+
+        // Update the icon based on the validation result
+        if (isValid) {
+            icon.classList.add('validated');
+            icon.classList.remove('invalidated');
+            icon.classList.add('fa-check-circle');
+            icon.classList.remove('fa-times-circle');
+        } else {
+            icon.classList.add('invalidated');
+            icon.classList.remove('validated');
+            icon.classList.add('fa-times-circle');
+            icon.classList.remove('fa-check-circle');
+        }
+    }
+
+   
+</script>
+<script>
+let seconds = 0;
+setInterval(() => {
+  seconds++;
+  const mins = String(Math.floor(seconds / 60)).padStart(2, '0');
+  const secs = String(seconds % 60).padStart(2, '0');
+  document.getElementById('timer').innerText = `⏱️ ${mins}:${secs}`;
+}, 1000);
+</script>
+
+{% endblock %}
+

@@ -1,0 +1,327 @@
+
+     @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css');
+/* Ajout de FontAwesome */
+ 
+.btn-primary {
+                                    background: linear-gradient(135deg, #0062cc, #004b87) !important; /* Dégradé de bleu */
+                                    border: none;
+                                    color: white;
+                                    padding: 12px 30px;
+                                    font-size: 10px;
+                                    font-weight: 600;
+                                    border-radius: 50px; /* Bordures arrondies */
+                                    transition: all 0.3s ease-in-out;
+                                    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Ombre douce */
+                                    position: absolute; /* Position absolue pour placer le bouton à droite */
+                                    top: 20px; /* Marge en haut */
+                                    right: 5px; /* Marge à droite */
+                                    margin-bottom: 10px; /* Marge en bas */
+                                }
+                            
+.btn-primary:hover {
+                                    background: linear-gradient(135deg, #004b87, #0062cc)
+                                     !; /* Inverse du dégradé au survol */
+                                    cursor: pointer;
+                                    transform: translateY(-2px); /* Effet de "relèvement" au survol */
+                                    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); /* Ombre plus forte au survol */
+                                }
+                            
+ .btn-primary:focus {
+                                    outline: none;
+                                    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.5); /* Ombre de focus douce */
+                                }
+                            
+.btn-primary:active {
+                                    transform: translateY(1px); /* Effet de "pressage" */
+                                    box-shadow: none;
+                                }
+                          
+    
+
+.card {
+        background: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        padding: 20px !important;
+        margin-top: 50px o !important;
+    }
+
+.card-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 20px;
+    }
+
+.table-per {
+        width: 100%;
+        border-collapse: collapse;
+        background: #fff;
+        border-radius: 10px !important;
+        overflow: hidden;
+    }
+
+.table-per thead {
+        background-color: #084688;
+        color: white;
+    }
+
+.table-per thead th {
+        padding: 12px !important;
+        text-align: center;
+        font-weight: bold;
+    }
+
+.table-per tbody tr {
+        border-bottom: 1px solid #ddd;
+        transition: background 0.2s;
+    }
+
+.table-per tbody tr:hover {
+        background: #f1f1f1;
+    }
+
+.table-per tbody td {
+        padding: 10px;
+        color: #333;
+        text-align: center;
+        vertical-align: middle;
+    }
+
+.form-check-input {
+        cursor: pointer;
+        width: 18px;
+        height: 18px;
+    }
+
+.table-per tbody td img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        margin-right: 10px;
+    }
+
+.table-per tbody td span {
+        font-weight: 500;
+        color: #555;
+    }
+
+.badge {
+    padding: 6px 12px;
+    border-radius: 3px;  /* Rend le badge carré */
+    font-weight: 600;
+    display: inline-block;
+}
+
+
+.badge-outline-success {
+        color: #24983f;
+        border: 1px solid #24983f;
+        background-color: rgba(40, 167, 69, 0.1);
+    }
+
+.badge-outline-warning {
+        color: #ff9800;
+        border: 1px solid #ff9800;
+        background-color: rgba(255, 152, 0, 0.1);
+    }
+
+.badge-outline-danger {
+        color: #dc3545;
+        border: 1px solid #dc3545;
+        background-color: rgba(220, 53, 69, 0.1);
+    }
+
+.badge-outline-secondary {
+        color: #6c757d;
+        border: 1px solid #6c757d;
+        background-color: rgba(108, 117, 125, 0.1);
+    }
+
+    /* Icônes */
+.icon-link {
+        font-size: 20px;
+        margin: 0 10px;
+        text-decoration: none;
+        color: #007bff;
+        transition: color 0.3s ease-in-out;
+    }
+
+.icon-link:hover {
+        color: #0056b3;
+    }
+
+.icon-link.delete {
+        color: #dc3545;
+    }
+
+.icon-link.delete:hover {
+        color: #a71d2a;
+    }
+
+   
+        .table thead {
+            display: none;
+        }
+
+        .table, .table tbody, .table tr, .table td {
+            display: block;
+            width: 100%;
+        }
+
+        .table tr {
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 10px;
+        }
+
+        .table td {
+            text-align: right;
+            padding-left: 50%;
+            position: relative;
+        }
+
+        .table td::before {
+            content: attr(data-label);
+            position: absolute;
+            left: 10px !important;
+            width: 45% !important;
+            text-align: left;
+            font-weight: bold;
+        }
+    
+   
+        /* --- Style du modal modernisé --- */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+    
+        .modal-content {
+            background: white;
+            padding: 25px;
+            width: 90%;
+            max-width: 450px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+    
+        
+    
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+        }
+    
+        .close {
+           
+            font-size: 22px;
+            font-weight: bold;
+            float: right;
+            cursor: pointer;
+        }
+    
+        .input-group {
+            text-align: left;
+            margin: 10px 0;
+        }
+    
+        .input-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+    
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+          .btn-block {
+            width: 100%;
+            padding: 12px;
+            background-color: #285da7;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: background 0.3s ease-in-out;
+        }
+    
+        .btn-block:hover {
+            background-color: #285da7;
+        }
+    
+        /* --- Styles des alertes --- */
+        .alert-container {
+            margin-bottom: 10px;
+        }
+    
+        .alert {
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+    
+        .alert-success { background: #d4edda; color: #155724; }
+        .alert-warning {  color: #df1a1a;background-color: white; }
+        .alert-danger { background: #f8d7da; color: #721c24; }
+        .alert-info { background: #d1ecf1; color: #0c5460; }
+      
+    
+ 
+        .custom-modal {
+            display: none;
+            position: fixed;
+            z-index: 1100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .custom-modal .modal-content {
+            background: white;
+            padding: 25px;
+            width: 90%;
+            max-width: 450px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        .custom-modal .close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .modal.show {
+            display: flex !important;
+        }
+        

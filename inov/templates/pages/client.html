@@ -1,0 +1,130 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %} Acceuil {% endblock title %}
+{% load static %}
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}
+
+<link rel="stylesheet" href="{% static 'assets/css/index-client.css' %}">
+
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="content">
+
+<div class="container-fluid">
+<div class="row">
+	<div class="col-md">
+		<div class="card card-body">
+			<h4 class="text-info">Contacts Client</h4>
+			<p>Email:  {{client.email}} </p>
+			<p>Nom & Prénom : {{client.nom}} {{client.prénom}}</p>
+			<p>N° Téléphone:  {{client.phone}}</p>
+		</div>
+	</div>
+
+	<div class="col-md">
+		<div class="card card-body">
+			<center><h4 class="text-info">Total Factures</h4></center>
+			<h1 style="text-align: center;padding: 10px"> {{Facture_count}} </h1>
+		</div>
+	</div>
+</div>
+
+<br>
+<div class="row">
+	<div class="col">
+		<div class="card card-body">
+			<h4 class="text-info">Trouver Une Facture :</h4>
+		<form method="GET" action=".">
+            <div class="form-row">
+                
+               
+                <div class="form-group col-md-4 col-lg-4">
+                            
+                            <input type="date" class="form-control" id="publishDateMin" name="dateCreation">
+                </div> 
+
+
+
+                <div class="form-group col-md-4 col-lg-4">
+                
+				<select id="statut" class="form-control" name="statut">
+                            <option selected disabled>Statut</option>
+                            <option value="Validé">Validé</option>
+                            <option value="Non Validé">Non Validé</option>
+
+                </select>
+                </div> 
+                <div class="form-group col-md-4 col-lg-4 ">
+                <button type="submit" class="btn btn-sm btn-warning btn-rounded "><span class="fa fa-search"></span> Chercher</button>
+                <a class="btn btn-info btn-sm btn-rounded " href="{% url 'client' client.user_id %}"><span class="fa fa-times"></span> Annuler  </a>
+            		</div>
+			</div>
+      </form>
+</div>
+</div>
+</div>
+<br>
+
+<div class="row">
+	<div class="col-md">
+		<div class="card card-body">
+			<center><h4 class="text-info">Liste des Factures </h4></center>
+			<br>
+			<table class="table-sm table-hover table-striped" >
+				<tr>
+					<th>Facture</th>
+					<th>Client</th>
+				
+					<th>Date de Création</th>
+					<th>Status</th>
+					<th>Extraction<br>Automatique</th>
+					
+					<th>Action
+				</tr>
+
+				{% for facture in factures %}
+
+	
+
+				<tr>
+					<td><img src="{{ facture..file.url}}" width="150" height="150" data-toggle="modal" data-target="#myModal{{ forloop.counter }}"> </td>
+        				<div id="myModal{{ forloop.counter }}" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                          <!-- Modal -->
+                          <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button class="close" type="button" data-dismiss="modal">x</button>
+                                </div>
+                                <div class="modal-body">
+                                    <img src="{{facture.file_url}}" class="img-responsive" width="100%">
+                                </div>
+                            </div>
+                          </div>
+                        </div>
+					
+					
+					<td>{{facture.Client}}</td>
+					<td>{{facture.date_created}}</td>
+					<td>{{facture.status}}</td>
+				
+					
+					<td ><center><a class="btn  btn-info"  href="{% url 'ChoixFile'  facture.id %}"><i class="fa fa-download"></a></center></td>
+					
+				</tr>
+				{% endfor %}
+
+			</table>
+		</div>
+	</div>
+</div>
+
+
+</div>
+</div>
+
+{% endblock content %}
+
+<!-- Specific JS goes HERE --> 
+{% block javascripts %}{% endblock javascripts %}

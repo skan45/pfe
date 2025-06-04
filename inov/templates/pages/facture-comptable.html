@@ -1,0 +1,646 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block stylesheets %}
+<link rel="stylesheet" href="{% static 'assets/css/extraction.css' %}">
+{% endblock stylesheets %}
+
+{% block content %}
+
+<style>
+
+  .card {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    margin-bottom: 20px;
+  }
+  
+  .card-header {
+    font-weight: bold;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .file-list-header {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .folder-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+  
+  .folder-icon {
+    font-size: 2rem;
+    color: #6c757d;
+  }
+  
+  .folder-title {
+    margin: 0;
+    font-size: 1.5rem;
+  }
+  
+  .file-count {
+    background-color: #e9ecef;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+  }
+  
+  .back-button {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    color: #495057;
+    padding: 8px 15px;
+    border-radius: 4px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s;
+  }
+  
+  .back-button:hover {
+    background-color: #e9ecef;
+    text-decoration: none;
+  }
+  
+  .file-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+  
+  .file-table thead {
+    background-color: #f8f9fa;
+  }
+  
+  .file-table th {
+    padding: 15px;
+    font-weight: 600;
+    text-align: left;
+    border-bottom: 2px solid #dee2e6;
+  }
+  
+  .file-table td {
+    padding: 15px;
+    vertical-align: middle;
+    border-bottom: 1px solid #dee2e6;
+  }
+  
+  .file-table tr:last-child td {
+    border-bottom: none;
+  }
+  
+  .file-table tr:hover {
+    background-color: #f8f9fa;
+  }
+  
+  .file-icon {
+    font-size: 1.5rem;
+    color: #6c757d;
+    width: 40px;
+    text-align: center;
+  }
+  
+  .file-preview {
+    width: 50px;
+    height: 70px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+  }
+  
+  .file-name {
+    font-weight: 500;
+    color: #495057;
+  }
+  
+  .file-meta {
+    font-size: 0.85rem;
+    color: #6c757d;
+  }
+  
+  .file-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+  
+  .file-actions button {
+    border: none;
+    background: none;
+    padding: 5px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .file-actions button:hover {
+    background-color: #f0f0f0;
+  }
+  
+  .btn-view {
+  background: none;
+  border: none;
+  padding: 5px;
+  cursor: pointer;
+  color: #17a2b8;
+  }
+  
+  .btn-extract {
+  background: none;
+  border: none;
+  padding: 5px;
+  cursor: pointer;
+  color: #28a745;
+  }
+  
+  .btn-edit {
+    background: none;
+    border: none;
+    padding: 5px;
+    cursor: pointer;
+    color: #ffc107;
+  }
+  
+  
+  .empty-state {
+    text-align: center;
+    padding: 50px 0;
+    color: #6c757d;
+  }
+  
+  .empty-state i {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    opacity: 0.7;
+  }
+  
+  .empty-state h4 {
+    margin-bottom: 10px;
+    font-weight: normal;
+  }
+  
+  .upload-zone {
+    border: 2px dashed #dee2e6;
+    border-radius: 8px;
+    padding: 30px;
+    text-align: center;
+    margin: 20px 0;
+    background-color: #f8f9fa;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  
+  .upload-zone:hover {
+    border-color: #28a745;
+    background-color: #f0f9f0;
+  }
+  
+  .upload-icon {
+    font-size: 2.5rem;
+    color: #28a745;
+    margin-bottom: 15px;
+  }
+  
+  .pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+  }
+  
+  .pagination .page-item .page-link {
+    padding: 8px 16px;
+    color: #495057;
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+  }
+  
+  .pagination .page-item.active .page-link {
+    background-color: #007bff;
+    border-color: #007bff;
+    color: #fff;
+  }
+  
+  .pagination .page-item .page-link:hover {
+    background-color: #e9ecef;
+  }
+  
+  /* Modal styles */
+  .modal-header.bg-danger .modal-title,
+  .modal-header.bg-danger .btn-close {
+    color: white;
+  }
+  
+  .modal-footer {
+    justify-content: space-between;
+  }
+  .spinner-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+     background-color: rgba(255, 255, 255, 0.1); /* Légère transparence */
+    backdrop-filter: blur(5px); /* Flou */
+    -webkit-backdrop-filter: blur(5px); /* Support Safari */;
+    border-radius: var(--border-radius);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 0.625rem;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+ 
+
+  .spinner-text {
+    margin-top: 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--primary);
+  }
+
+  .spinner-border {
+    width: 2rem;
+    height: 2rem;
+    color: var(--primary);
+  }
+</style>
+
+<div class="content">
+  <div class="container-fluid">
+{% if fact %}
+    <!-- Formulaire de filtre -->
+    <div class="row">
+      <div class="col-md">
+        <div class="card card-body">
+          <center><h3 class="text-success">Filtrer les factures</h3></center>
+          <form method="get">
+            <div class="form-group">
+              <label>Client</label>
+              <select name="client_id" class="form-control">
+                <option value="">-- Choisir un client --</option>
+                {% for client in clients %}
+                  <option value="{{ client.id }}" {% if client.id|stringformat:"s" == request.GET.client_id %}selected{% endif %}>{{ client.nom }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Statut</label>
+              <select name="statut" class="form-control">
+                <option value="">-- Choisir un statut --</option>
+                <option value="Validé" {% if selected_statut == "Validé" %}selected{% endif %}>Validé</option>
+                <option value="Non Validé" {% if selected_statut == "Non Validé" %}selected{% endif %}>Non Validé</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Date de création</label>
+              <input type="date" class="form-control" name="dateCreation" value="{{ selected_date }}">
+            </div>
+<br>
+            <button type="submit" class="btn btn-outline-primary">Chercher</button>
+            <a class="btn btn-outline-secondary"  href="{% url 'FactureComptable' %}">Annuler</a>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Historique des factures -->
+    <br>
+    <div class="row">
+      <div class="col-md">
+       
+        <div class="card card-body">
+          <table class="table-sm table-hover table-striped">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Aperçu</th>
+                <th>Nom du facture</th>
+                <th>Taille</th>
+                <th>Date d'ajout</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for f in fact %}
+                {% if f.file %}
+                 <tr>
+  <td>{{ forloop.counter }}</td>
+
+  <!-- Aperçu -->
+  <td>
+    {% if f.file %}
+      {% if f.file.file_type == 'pdf' %}
+        <i class="far fa-file-pdf file-icon text-danger"></i>
+      {% elif f.file.file_type == 'image' %}
+        <img src="{{ f.file.file.url }}" alt="Aperçu" class="file-preview" style="width: 60px; height: auto;">
+      {% elif f.file.file_type == 'word' %}
+        <i class="far fa-file-word file-icon text-primary"></i>
+      {% elif f.file.file_type == 'excel' %}
+        <i class="far fa-file-excel file-icon text-success"></i>
+      {% else %}
+        <i class="far fa-file file-icon"></i>
+      {% endif %}
+    {% endif %}
+  </td>
+
+  <!-- Nom du fichier -->
+  <td>
+    {% if f.file %}
+      <div class="file-name">{{ f.file.filename }}</div>
+      <div class="file-meta">Type: {{ f.file.file_extension|upper }}</div>
+    {% endif %}
+  </td>
+
+  <!-- Taille du fichier -->
+  <td>
+    {% if f.file %}
+      {{ f.file.file.size|filesizeformat }}
+    {% endif %}
+  </td>
+
+  <!-- Date d'ajout -->
+  <td>{{ f.file.uploaded_at|date:"d/m/Y H:i" }}</td>
+
+  <!-- Actions -->
+  <td>
+    {% if f.file %}
+  
+     {% if f.file.facture.status == "Validé" %}
+      <i class="fas fa-check-circle text-success me-2" title="Facture validée"></i>
+    {% else %}
+      <i class="fas fa-times-circle text-danger me-2" title="Facture non validée"></i>
+    {% endif %}
+ 
+
+
+      <button class="btn-view" onclick="window.open('{{ f.file.file.url }}', '_blank')" title="Voir le fichier">
+        <i class="fas fa-eye"></i>
+      </button>
+     <button class="btn-extract"
+        {% if f.file.extraction_data %}
+          disabled
+          style="cursor: not-allowed; opacity: 0.6;"
+          title="Cette facture est déjà extraite"
+        {% else %}
+          title="Extraire les données"
+        {% endif %}
+        onclick="modelsmodal('{{ f.file.id }}')">
+  <i class="fas fa-file-export"></i>
+</button>
+
+    <button class="btn-edit" title="Modifier"
+        data-file-id="{{ f.file.id }}"
+        data-has-data="{% if f.file.extraction_data %}true{% else %}false{% endif %}"
+        onclick="handleEdit(this)">
+  <i class="fas fa-edit"></i>
+</button>
+
+
+
+              {% endif %}
+                       </td>
+                    </tr>                 
+                      </div>
+                    </div>
+                  </div>
+                {% endif %}
+              {% empty %}
+                <tr>
+                  <td colspan="6"><em>Aucune facture trouvée.</em></td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>    
+  </form>
+
+</div>
+<!--logique de validation à implementer-->
+     <div class="mt-3 text-end">
+  <form method="post" action=""> 
+    {% csrf_token %}
+    <button type="submit" class="btn btn-success">
+      ✅ Valider toutes les factures
+    </button>
+        </div>
+      </div>
+    </div>
+         <div class="modal fade" id="extractionModelModal" tabindex="-1" aria-labelledby="extractionModelModalLabel"aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="extractionModelModalLabel">
+                    Choisir un modèle d'extraction </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer">
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                    <!-- Format Selection -->
+                   <input type="hidden" id="selected-file-id" name="file_id" value="">
+                   <ul class="list-group" id="extraction-model-list">
+                   <!-- Models will be injected here -->
+                   </ul>
+                  </div>
+                  <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                             Fermer
+                      </button>
+                      <button type="button" class="btn btn-primary" id="confirmExtractionButton"  >
+                             Confirmer
+                      </button>
+        <!-- Loader pendant l'extraction -->
+                       <div class="spinner-overlay d-none" id="spinner-extract-loader">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <div class="spinner-text mt-2">Extraction en cours...</div>
+                        </div>
+
+                 </div>
+              </div>
+            </div>
+          </div>
+<!-- Pagination -->
+  <nav aria-label="Page navigation">
+    <ul class="pagination">
+      <li class="page-item disabled">
+        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Précédent</a>
+      </li>
+      <li class="page-item active"><a class="page-link" href="#">1</a></li>
+      <li class="page-item"><a class="page-link" href="#">2</a></li>
+      <li class="page-item"><a class="page-link" href="#">3</a></li>
+      <li class="page-item">
+        <a class="page-link" href="#">Suivant</a>
+      </li>
+    </ul>
+  </nav>
+  {% else %}
+  <!-- État vide -->
+     <div class="empty-state">
+       <i class="fas fa-file-invoice-dollar"></i>
+       <h4>Aucune facture trouvée.</h4>
+       <p>Essayez de modifier les filtres ou d’ajouter des factures.</p>
+     </div>
+{% endif %}
+</div>
+  </div>
+</div>
+<script>
+
+async function modelsmodal(fileId) {
+  const list = document.getElementById('extraction-model-list');
+  list.innerHTML = '<li class="list-group-item">Chargement des modèles...</li>';
+
+  try {
+    const response = await fetch(`/get-default-models-for-file/${fileId}/`);
+    if (!response.ok) throw new Error('Erreur de chargement des modèles');
+
+    const { data } = await response.json();
+ 
+   console.log("Data reçue :", data);
+
+    list.innerHTML = ''; // reset liste
+
+    if (!data || data.length === 0) {
+      list.innerHTML = '<li class="list-group-item">Aucun modèle disponible</li>';
+      return;
+    }
+
+    data.forEach(group => {
+      const groupHeader = document.createElement('h6');
+      groupHeader.className = 'mt-3 fw-bold';
+      groupHeader.textContent = `Modèles pour ${group.type_document}`;
+      list.appendChild(groupHeader);
+
+      group.models.forEach(model => {
+        const item = document.createElement('div');
+        item.className = 'form-check';
+
+        const radio = document.createElement('input');
+        radio.className = 'form-check-input';
+        radio.type = 'radio';
+        radio.name = `model-${group.type_document}`;
+        radio.value = model.id;
+        radio.id = `model-${group.type_document}-${model.id}`;
+
+        if (model.is_default) radio.checked = true;
+
+        const label = document.createElement('label');
+        label.className = 'form-check-label';
+        label.htmlFor = radio.id;
+        label.textContent = model.name;
+
+        item.appendChild(radio);
+        item.appendChild(label);
+        list.appendChild(item);
+      });
+    });
+    document.getElementById("selected-file-id").value = fileId;
+
+    const myModal = new bootstrap.Modal(document.getElementById('extractionModelModal'));
+    myModal.show();
+
+  } catch (err) {
+    console.error('Erreur lors de la récupération des modèles :', err);
+    list.innerHTML = '<li class="list-group-item text-danger">Erreur de chargement</li>';
+  }
+}
+
+    
+  // ✅ Fonction d'extraction appelée à la confirmation
+  document.getElementById("confirmExtractionButton").addEventListener("click", async () => {
+  const fileId = document.getElementById("selected-file-id").value; // <-- ici on le récupère proprement
+
+  const selectedModel = document.querySelector("input[type=radio]:checked");
+  const loader = document.getElementById("spinner-extract-loader");
+
+  if (!fileId || !selectedModel) {
+    alert("Veuillez sélectionner un modèle.");
+    return;
+  }
+
+  const modelId = selectedModel.value;
+
+  try {
+    // 👉 Affiche le loader
+    loader.classList.remove("d-none");
+
+    const formData = new FormData();
+    formData.append("model_id", modelId);
+
+    const response = await fetch(`/extract-data/${fileId}/`, {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": getCookie("csrftoken"),
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errData = await response.json();
+      throw new Error(errData.error || "Erreur d'extraction");
+    }
+
+    const blob = await response.blob();
+    const a = document.createElement("a");
+    a.href = window.URL.createObjectURL(blob);
+    a.download = `extraction_${fileId}.json`;
+    a.click();
+    a.remove();
+
+    // ✅ Cache le loader et ferme le modal
+    loader.classList.add("d-none");
+    bootstrap.Modal.getInstance(document.getElementById('extractionModelModal')).hide();
+
+  } catch (err) {
+    loader.classList.add("d-none");
+    console.error("Erreur d'extraction :", err);
+    alert("Une erreur est survenue : " + err.message);
+  }
+});
+
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      // Ce cookie commence-t-il par le nom qu'on cherche ?
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
+<!--edit part-->
+  function handleEdit(button) {
+    const fileId = button.getAttribute('data-file-id');
+    const hasData = button.getAttribute('data-has-data') === 'true';
+
+    if (!hasData) {
+      alert("⚠️ Aucune donnée extraite pour ce fichier. Veuillez d'abord lancer l'extraction.");
+      return; // Bloque la redirection
+    }
+
+    // Redirection vers l'URL Django définie dans urls.py
+    window.location.href = `/edit-extraction-data/${fileId}/`;
+  }
+</script>
+
+{% endblock content %}

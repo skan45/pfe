@@ -1,0 +1,111 @@
+   body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(120deg, #4b6cb7 0%, #182848 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+        
+        .user_card {
+            width: 400px;
+            background: #fff;
+            border-radius: 15px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+            padding: 40px 30px;
+            transition: transform 0.3s ease;
+        }
+        
+        .user_card:hover {
+            transform: translateY(-5px);
+        }
+        
+        #form-title {
+            color: #4b6cb7;
+            margin-bottom: 30px;
+            font-weight: 600;
+            font-size: 28px;
+            text-align: center;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        .input-group-text {
+            background-color: #4b6cb7;
+            color: white;
+            border: none;
+            width: 40px;
+            border-radius: 5px 0 0 5px;
+        }
+        
+        .form-control {
+            border-radius: 0 5px 5px 0;
+            border: 1px solid #e0e0e0;
+            padding: 10px 15px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            border-color: #4b6cb7;
+            box-shadow: 0 0 0 0.2rem rgba(75, 108, 183, 0.25);
+        }
+        
+        .login_btn {
+            background: #4b6cb7;
+            color: white;
+            border-radius: 5px;
+            padding: 10px 25px;
+            font-weight: 600;
+            border: none;
+            transition: all 0.3s;
+            width: 100%;
+        }
+        
+        .login_btn:hover {
+            background: #36508c;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(75, 108, 183, 0.4);
+        }
+        
+        .login_btn:focus {
+            outline: none;
+            box-shadow: 0 0 0 0.2rem rgba(75, 108, 183, 0.25);
+        }
+        
+        .links {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .links a {
+            color: #4b6cb7;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+        
+        .links a:hover {
+            color: #36508c;
+            text-decoration: underline;
+        }
+        
+        .errorlist {
+            color: #e74c3c;
+            font-size: 13px;
+            list-style-type: none;
+            padding-left: 0;
+            margin-bottom: 15px;
+        }
+        
+        select.form-control {
+            height: 45px;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234b6cb7' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 15px;
+            padding-right: 30px;
+        }
